@@ -22,18 +22,20 @@ public:
     ~Array();
 
     // Data access
-    size_t size() const;
-    size_t capacity() const;
-    bool empty() const;
+    inline size_t size() const;
+    inline size_t capacity() const;
+    inline bool empty() const;
     
     void reserve(size_t capacity);
     void resize(size_t size);
     void shrink_to_fit();   
     
-    iterator begin();
-    iterator end();
-    T& front();
-    T& back();
+    inline iterator begin();
+    inline iterator end();
+    inline T& front();
+    inline T& back();
+    inline const T& front() const;
+    inline const T& back() const;
 
     void push_back(const T& value);
     void pop_back();
