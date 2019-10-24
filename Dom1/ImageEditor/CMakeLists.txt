@@ -1,3 +1,5 @@
 cmake_minimum_required (VERSION 2.6)
 project (ImageEditor)
+set (CMAKE_CXX_STANDARD 11)
 add_subdirectory(${PROJECT_SOURCE_DIR}/src)
+add_subdirectory(${PROJECT_SOURCE_DIR}/tests)
