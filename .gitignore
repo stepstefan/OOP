@@ -4,6 +4,6 @@
 *.obj
 *.lib
 *.ycm_extra_conf.py
-Dom1/Slike*
+Slike*/
 Release/
 Debug/

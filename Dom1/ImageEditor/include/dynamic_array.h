@@ -55,11 +55,6 @@ private:
     T* data_;
     size_t capacity_;
     size_t size_;
-
-    void copy(typename Array<T>::iterator start_iterator, typename Array<T>::iterator end_iterator)
-    {
-        // TODO
-    }
 };
 
 
@@ -250,26 +245,27 @@ template<typename T>
 Array<T>& Array<T>::operator=(const Array<T>& array)
 {
     delete[] data_;
-    size_ = array.size();
-    capacity_ = array.capacity();
-    data_ = new T[capacity_];
+    data_ = new T[array.capacity()];
     if (!data_)
     {
         std::cout << "Mem. allocation failed" << std::endl;
-        size_ = 0;
-        capacity_ = 0;
     }
     else
     {
-        //TODO
+        size_ = array.size();
+        capacity_ = array.capacity();
+        for(size_t i = 0; i < size_; ++i)
+        {
+            data_[i] = array.data_[i];
+        }
     }
-    
+    return *this;
 }
 
 template<typename T>
 void Array<T>::crop(size_t start_idx, size_t end_idx)
 {
-    if (start_idx >= end_idx)
+    if (start_idx >= end_idx || start_idx < 0 || end_idx > size_)
     {
         std::cout << "Cannot crop from " << start_idx << " to " << end_idx << std::endl;
     }

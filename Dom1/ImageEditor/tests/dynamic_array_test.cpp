@@ -15,7 +15,7 @@ int main()
     a.push_back(3);
     a.push_back(4);
     //a.flip();
-    a.crop(0,100);
+    a.crop(0,1);
     for(auto& iterator : a)
     {
         std::cout << iterator << std::endl;
