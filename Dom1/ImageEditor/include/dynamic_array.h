@@ -18,20 +18,21 @@ class Array
 public:
     typedef T* iterator;
 
-    // Constructors, destructor
+// Constructors, destructor (self-explanatory)
     Array();
     explicit Array(size_t size);
     explicit Array(size_t size, T value);
     Array(const Array<T>& array);
     ~Array();
 
-    // Data access
+// Data access (self-explanatory)
     inline size_t size() const;
     inline size_t capacity() const;
     inline bool empty() const;
     
     void reserve(size_t capacity);
     void resize(size_t size);
+    void clear();
     void shrink_to_fit();   
     
     iterator begin();
@@ -44,12 +45,32 @@ public:
     void push_back(const T& value);
     void pop_back();
 
+    T& at(size_t index);
+
     T& operator[](size_t index);
     Array<T>& operator=(const Array<T>& array);
 
-    // Misc
+// Misc    
+    // Flip array around its middle
     void flip();
-    void crop(size_t start_idx, size_t end_idx);
+    
+    // Crop array from start to end index and resize it
+    size_t crop(size_t start_idx, size_t end_idx);
+
+    // Switch elements at index1 and index2
+    void switch_elements(size_t index1, size_t index2);
+    
+    // Move element on position index to top of array (array size is same)
+    void move_to_top(size_t index);
+    
+    // Swith element on position index with last element
+    void switch_to_top(size_t index);
+
+    // Move element on position index to the bottom of array (array size is same)    
+    void move_to_bottom(size_t index);
+
+    // Switch element on positin index with first element
+    void switch_to_bottom(size_t index);
 
 private:
     T* data_;
@@ -66,16 +87,14 @@ private:
 // Constructors
 template<typename T>
 Array<T>::Array()
-    : capacity_(0), size_(0)
-{
-    data_ = new T[0];
-}
+    : size_(0), capacity_(0)
+{}
 
 template<typename T>
 Array<T>::Array(size_t size)
     : size_(size), capacity_(size)
 {
-    data_ = new T[size_];
+    data_ = new T[size];
     if (!data_)
     {
         std::cout << "Mem. allocation failed" << std::endl;
@@ -123,11 +142,16 @@ Array<T>::Array(const Array<T>& array)
 template<typename T>
 Array<T>::~Array()
 {
+    if (!this->empty())
+    {
+        delete[] data_;
+    }
     size_ = 0;
     capacity_ = 0;
-    delete[] data_;
 }
 
+
+// Data acccess
 template<typename T>
 inline size_t Array<T>::size() const
 {
@@ -143,7 +167,7 @@ inline size_t Array<T>::capacity() const
 template <typename T>
 inline bool Array<T>::empty() const
 {
-    return size_ == 0;
+    return capacity_ == 0;
 }
 
 template<typename T>
@@ -185,7 +209,7 @@ inline const T& Array<T>::back() const
 template<typename T>
 void Array<T>::reserve(size_t capacity)
 {
-    T* data = new T[capacity_];
+    T* data = new T[capacity];
     if (!data)
     {
         std::cout << "Mem. allocation failed" << std::endl;
@@ -193,13 +217,16 @@ void Array<T>::reserve(size_t capacity)
     else
     {
         size_t new_size = capacity < size_ ? capacity : size_;
-        for(size_t i = 0; i < new_size; ++i)
+        if (!this->empty())
         {
-            data[i] = data_[i];
+            for(size_t i = 0; i < new_size; ++i)
+            {
+                data[i] = data_[i];
+            }
+            delete[] data_;
         }
         capacity_ = capacity;
         size_ = new_size;
-        delete[] data_;
         data_ = data;
     }
     
@@ -210,6 +237,12 @@ void Array<T>::resize(size_t size)
 {
     reserve(size);
     size_ = size;
+}
+
+template<typename T>
+void Array<T>::clear()
+{
+    size_ = 0;
 }
 
 template<typename T>
@@ -225,14 +258,31 @@ void Array<T>::push_back(const T& value)
 template<typename T>
 void Array<T>::pop_back()
 {
-    size_--;
+    if (size_ > 0)
+    {
+        size_--;
+    }
 }
 
 template<typename T>
 void Array<T>::shrink_to_fit()
 {
     capacity_ = size_;
-    realloc(data_, size_*sizeof(T));
+    reserve(size_);
+}
+
+template<typename T>
+T& Array<T>::at(size_t index)
+{
+    if(index >= capacity_ || index >= size_)
+    {
+        std::cout << "Invalid index!" << std::endl;
+        exit;
+    }
+    else
+    {
+        return *(data_ + index);
+    }
 }
 
 template<typename T>
@@ -262,12 +312,15 @@ Array<T>& Array<T>::operator=(const Array<T>& array)
     return *this;
 }
 
+
+// Misc
 template<typename T>
-void Array<T>::crop(size_t start_idx, size_t end_idx)
+size_t Array<T>::crop(size_t start_idx, size_t end_idx)
 {
     if (start_idx >= end_idx || start_idx < 0 || end_idx > size_)
     {
         std::cout << "Cannot crop from " << start_idx << " to " << end_idx << std::endl;
+        return 0;
     }
     else
     {
@@ -275,10 +328,11 @@ void Array<T>::crop(size_t start_idx, size_t end_idx)
         size_t new_size = end_idx - start_idx;
         for(size_t i = 0; i < new_size; ++i)
         {
-            data_[i] = data_[start_idx + i];
+            this->at(i) = this->at(start_idx + i);
         } 
         size_ = new_size;
         this->shrink_to_fit();
+        return new_size;
     }
 }
 
@@ -299,5 +353,71 @@ void Array<T>::flip()
             *(first++) = *last;
             *(last--) = tmp;
         }   
+    }
+}
+
+template<typename T>
+void Array<T>::switch_elements(size_t index1, size_t index2)
+{
+    if (index1 >= size_ || index2 >= size_)
+    {
+        std::cout << "Cannot access elements at positions " << index1 << " and " << index2 << std::endl << "Array unchanged" << std::endl;
+    }
+    else
+    {  
+        T tmp = this->at(index1);
+        this->at(index1) = this->at(index2);
+        this->at(index2) = tmp;
+    }
+    
+}
+
+template<typename T>
+void Array<T>::switch_to_top(size_t index)
+{
+    this->switch_elements(index, size_ - 1);
+}
+
+template<typename T>
+void Array<T>::switch_to_bottom(size_t index)
+{
+    this->switch_elements(index, 0);
+}
+
+template<typename T>
+void Array<T>::move_to_top(size_t index)
+{
+    if (index >= size_)
+    {
+        std::cout << "Cannot move index " << index << std::endl << "Array unchanged" << std::endl; 
+    }
+    else
+    {
+        T tmp = this->at(index);
+        size_t next = index + 1;
+        for(; next < size_; ++next, ++index)
+        {
+            this->at(index) = this->at(next);
+        }
+        this->at(index) = tmp;
+    }
+}
+
+template<typename T>
+void Array<T>::move_to_bottom(size_t index)
+{
+    if (index >= size_)
+    {
+       std::cout << "Cannot move index " << index << std::endl << "Array unchanged" << std::endl; 
+    }
+    else
+    {
+        T tmp = this->at(index);
+        size_t prev = index - 1;
+        while(prev != 0)
+        {
+            this->at(index--) = this->at(prev--);
+        }
+        this->at(prev) = tmp;
     }
 }

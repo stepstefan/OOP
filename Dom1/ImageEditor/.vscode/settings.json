@@ -53,7 +53,20 @@
         "utility": "cpp",
         "typeindex": "cpp",
         "typeinfo": "cpp",
-        "valarray": "cpp"
+        "valarray": "cpp",
+        "csignal": "cpp",
+        "hash_map": "cpp",
+        "codecvt": "cpp",
+        "unordered_set": "cpp",
+        "iterator": "cpp",
+        "map": "cpp",
+        "memory_resource": "cpp",
+        "optional": "cpp",
+        "random": "cpp",
+        "set": "cpp",
+        "string": "cpp",
+        "string_view": "cpp",
+        "variant": "cpp"
     },
     "cmake.buildDirectory": "${workspaceRoot}/${buildType}",
     "cmake.configureOnOpen": true
