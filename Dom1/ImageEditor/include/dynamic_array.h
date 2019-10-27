@@ -47,29 +47,22 @@ namespace internal
     template<typename T, bool template_is_array>
     struct MemoryFreeHelper
     {
-        static void freememory(Array<T, template_is_array>* that)
+        static void freememory(Array<T, template_is_array>* that, size_t index)
         {
-            if (!that->empty())
-            {
-                // Free memory occupied by every element whatever it may be
-                for(size_t i = 0; i < that->capacity(); ++i)
-                {
-                    // Call destructor of template class (if it exists, if not this will have no effect!)
-                    // For class types and similiar...
-                    that->at(i).~T();
-                }
-            }
+            // If it is non-pointer type (e.g. class) do nothing
+            // delete[] data_ later will invoke destructors
         }
     };
 
     template<typename T, bool template_is_array>
     struct MemoryFreeHelper<T*, template_is_array>
     {
-        static void freememory(Array<T*, template_is_array>* that)
+        static void freememory(Array<T*, template_is_array>* that, size_t index)
         {
             if (!that->empty())
             {
-                for(size_t i = 0; i < that->capacity(); ++i)
+                // Free memory occupied by pointers (whether it is pointer to object or array of objects)
+                for(size_t i = index; i < that->size(); ++i)
                 {
                     if (template_is_array)
                     {
@@ -220,8 +213,11 @@ Array<T, template_is_array>::Array(const Array<T, template_is_array>& array)
 template<typename T, bool template_is_array>
 void Array<T, template_is_array>::freememory()
 {
-    internal::MemoryFreeHelper<T, template_is_array>::freememory(this);
-    delete[] data_;
+    internal::MemoryFreeHelper<T, template_is_array>::freememory(this, 0);
+    if (!this->empty())
+    {
+        delete[] data_;
+    }
 }
 
 template<typename T, bool template_is_array>
@@ -305,8 +301,12 @@ void Array<T, template_is_array>::reserve(size_t capacity)
             {
                 data[i] = data_[i];
             }
+            if (new_size < size_)
+            {
+                internal::MemoryFreeHelper<T, template_is_array>::freememory(this, new_size);
+            }
             // free current memory and switch to newly created one
-            freememory();
+            delete[] data_;
         }
         capacity_ = capacity;
         size_ = new_size;
@@ -343,6 +343,7 @@ void Array<T, template_is_array>::pop_back()
 {
     if (size_ > 0)
     {
+        internal::MemoryFreeHelper<T, template_is_array>::freememory(this, size_);
         size_--;
     }
 }
@@ -411,10 +412,13 @@ size_t Array<T, template_is_array>::crop(size_t start_idx, size_t end_idx)
         size_t new_size = end_idx - start_idx;
         for(size_t i = 0; i < new_size; ++i)
         {
+            T tmp = this->at(i);
             this->at(i) = this->at(start_idx + i);
-        } 
+            this->at(start_idx + i) = tmp;
+        }
+        internal::MemoryFreeHelper<T, template_is_array>::freememory(this, new_size);
+        capacity_ = new_size;
         size_ = new_size;
-        this->shrink_to_fit();
         return new_size;
     }
 }

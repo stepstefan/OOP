@@ -38,29 +38,29 @@ int main()
         std::cout << std::endl;
     }
 
-    layer.flipVertical();
+    // layer.flipVertical();
     
-    std::cout << "After flip" << std::endl; 
-    for(size_t i = 0; i < layer.height(); ++i)
-    {
-        for(size_t j = 0; j < layer.width(); ++j)
-        {
-            std::cout << int(layer.at(i, j)->g) << " ";
-        }
-        std::cout << std::endl;
-    }
+    // std::cout << "After flip" << std::endl; 
+    // for(size_t i = 0; i < layer.height(); ++i)
+    // {
+    //     for(size_t j = 0; j < layer.width(); ++j)
+    //     {
+    //         std::cout << int(layer.at(i, j)->g) << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
 
-    layer.invert();
+    // layer.invert();
 
-    std::cout << "After invert" << std::endl; 
-    for(size_t i = 0; i < layer.height(); ++i)
-    {
-        for(size_t j = 0; j < layer.width(); ++j)
-        {
-            std::cout << int(layer.at(i, j)->g) << " ";
-        }
-        std::cout << std::endl;
-    }
+    // std::cout << "After invert" << std::endl; 
+    // for(size_t i = 0; i < layer.height(); ++i)
+    // {
+    //     for(size_t j = 0; j < layer.width(); ++j)
+    //     {
+    //         std::cout << int(layer.at(i, j)->g) << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
 
     layer.crop(2, 2, 5, 3);
 
@@ -69,8 +69,8 @@ int main()
     {
         for(size_t j = 0; j < layer.width(); ++j)
         {
-            std::cout << int(layer.at(i, j)->g) << " ";
+            std::cout << int(layer.at(i, j)->g) << " " << std::flush;
         }
-        std::cout << std::endl;
+        std::cout << std::endl << std::flush;
     }
 }

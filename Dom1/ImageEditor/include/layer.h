@@ -15,6 +15,7 @@ typedef struct pixel
 
     pixel();
     pixel(uchar r, uchar g, uchar b);
+    ~pixel();
 
     void invert();
 

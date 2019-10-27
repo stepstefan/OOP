@@ -26,6 +26,9 @@ Pixel::pixel(uchar r, uchar g, uchar b)
     : r(r), g(g), b(b)
 {}
 
+Pixel::~pixel()
+{}
+
 Layer::Layer()
     : width_(0), height_(0), opacity_(0)
 {}
@@ -129,12 +132,12 @@ void Layer::crop(int x, int y, int w, int h)
     else
     {
         // First crop rows so less crops are performed by columns
-        height_ = data_.crop(size_t(y), size_t(y + h));
-        if (height_ != h)
-        {
-            std::cout << "Unknown crop error!" << std::endl;
-        }
-        else
+        // height_ = data_.crop(size_t(y), size_t(y + h));
+        // if (height_ != h)
+        // {
+        //     std::cout << "Unknown crop error!" << std::endl;
+        // }
+        // else
         {
             size_t new_width = (size_t)(w);
             for(auto& row : data_)
@@ -145,6 +148,7 @@ void Layer::crop(int x, int y, int w, int h)
                     std::cout << "Unknown crop error" << std::endl;
                 }
             }
+            height_ = data_.crop(size_t(y), size_t(y+h));
         }
     }
 }
