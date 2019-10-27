@@ -32,13 +32,13 @@ Layer::Layer()
 
 Layer::Layer(size_t width, size_t height)
     : width_(width), height_(height), opacity_(0),
-      data_(height, Array<Pixel*>(width))
+      data_(height, Array<Pixel*, false>(width))
 {
 }
 
 Layer::Layer(size_t width, size_t height, int opacity)
     : width_(width), height_(height), opacity_(opacity),
-      data_(height, Array<Pixel*>(width))
+      data_(height, Array<Pixel*, false>(width))
 {}
 
 Layer::~Layer()

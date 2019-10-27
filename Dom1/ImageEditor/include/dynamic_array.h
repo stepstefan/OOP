@@ -8,11 +8,86 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
+#include <type_traits>
 
 #define _CONST_VECTOR_INCREMENT_ 5
 
-// Default dynamic array class
 template<typename T>
+struct is_pointer { static const bool value = false; };
+
+template<typename T>
+struct is_pointer<T*> { static const bool value = true; };
+
+template<typename T>
+static void deleteIfPointer(const T& p)
+{
+    std::cout << "Nothing to delete" << std::endl;
+}
+
+template<typename T>
+static void deleteIfPointer(T* p, bool pointer_to_array)
+{
+    std::cout << "Deleting" << std::endl;
+    if (pointer_to_array)
+    {
+        delete[] p;
+    }
+    else
+    {
+        delete p;
+    }
+    
+}
+template<typename T, bool template_is_array> class Array;
+
+namespace internal
+{
+    // Helper struct for memory management for all data types (typenames, classes, pointers and pointers to array)
+    // Free all
+    template<typename T, bool template_is_array>
+    struct MemoryFreeHelper
+    {
+        static void freememory(Array<T, template_is_array>* that)
+        {
+            if (!that->empty())
+            {
+                // Free memory occupied by every element whatever it may be
+                for(size_t i = 0; i < that->capacity(); ++i)
+                {
+                    // Call destructor of template class (if it exists, if not this will have no effect!)
+                    // For class types and similiar...
+                    that->at(i).~T();
+                }
+            }
+        }
+    };
+
+    template<typename T, bool template_is_array>
+    struct MemoryFreeHelper<T*, template_is_array>
+    {
+        static void freememory(Array<T*, template_is_array>* that)
+        {
+            if (!that->empty())
+            {
+                for(size_t i = 0; i < that->capacity(); ++i)
+                {
+                    if (template_is_array)
+                    {
+                        delete[] that->at(i);
+                    }
+                    else
+                    {
+                        delete that->at(i);
+                    }
+                }
+            }
+        }
+    };
+}
+
+
+// Default dynamic array class
+template<typename T, bool template_is_array=false>
 class Array
 {
 public:
@@ -22,8 +97,11 @@ public:
     Array();
     explicit Array(size_t size);
     explicit Array(size_t size, T value);
-    Array(const Array<T>& array);
+    Array(const Array<T, template_is_array>& array);
     ~Array();
+
+    // Free allocated memory in every way
+    void freememory();
 
 // Data access (self-explanatory)
     inline size_t size() const;
@@ -48,7 +126,7 @@ public:
     T& at(size_t index);
 
     T& operator[](size_t index);
-    Array<T>& operator=(const Array<T>& array);
+    Array<T, template_is_array>& operator=(const Array<T, template_is_array>& array);
 
 // Misc    
     // Flip array around its middle
@@ -85,13 +163,13 @@ private:
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 // Constructors
-template<typename T>
-Array<T>::Array()
+template<typename T, bool template_is_array>
+Array<T, template_is_array>::Array()
     : size_(0), capacity_(0)
 {}
 
-template<typename T>
-Array<T>::Array(size_t size)
+template<typename T, bool template_is_array>
+Array<T, template_is_array>::Array(size_t size)
     : size_(size), capacity_(size)
 {
     data_ = new T[size];
@@ -101,8 +179,8 @@ Array<T>::Array(size_t size)
     }
 }
 
-template<typename T>
-Array<T>::Array(size_t size, T value)
+template<typename T, bool template_is_array>
+Array<T, template_is_array>::Array(size_t size, T value)
     :size_(size), capacity_(size)
 {
     data_ = new T[size_];
@@ -120,8 +198,8 @@ Array<T>::Array(size_t size, T value)
     
 }
 
-template<typename T>
-Array<T>::Array(const Array<T>& array)
+template<typename T, bool template_is_array>
+Array<T, template_is_array>::Array(const Array<T, template_is_array>& array)
 {
     size_ = array.size();
     capacity_ = array.capacity();
@@ -139,75 +217,79 @@ Array<T>::Array(const Array<T>& array)
     }
 }
 
-template<typename T>
-Array<T>::~Array()
+template<typename T, bool template_is_array>
+void Array<T, template_is_array>::freememory()
 {
-    if (!this->empty())
-    {
-        delete[] data_;
-    }
+    internal::MemoryFreeHelper<T, template_is_array>::freememory(this);
+    delete[] data_;
+}
+
+template<typename T, bool template_is_array>
+Array<T, template_is_array>::~Array()
+{
+    freememory();
     size_ = 0;
     capacity_ = 0;
 }
 
 
 // Data acccess
-template<typename T>
-inline size_t Array<T>::size() const
+template<typename T, bool template_is_array>
+inline size_t Array<T, template_is_array>::size() const
 {
     return size_;
 }
 
-template<typename T>
-inline size_t Array<T>::capacity() const
+template<typename T, bool template_is_array>
+inline size_t Array<T, template_is_array>::capacity() const
 {
     return capacity_;
 }
 
-template <typename T>
-inline bool Array<T>::empty() const
+template <typename T, bool template_is_array>
+inline bool Array<T, template_is_array>::empty() const
 {
     return capacity_ == 0;
 }
 
-template<typename T>
-typename Array<T>::iterator Array<T>::begin()
+template<typename T, bool template_is_array>
+typename Array<T, template_is_array>::iterator Array<T, template_is_array>::begin()
 {
     return data_;
 }
 
-template<typename T>
-typename Array<T>::iterator Array<T>::end()
+template<typename T, bool template_is_array>
+typename Array<T, template_is_array>::iterator Array<T, template_is_array>::end()
 {
     return (data_ + size_);
 }
 
-template<typename T>
-inline T& Array<T>::front()
+template<typename T, bool template_is_array>
+inline T& Array<T, template_is_array>::front()
 {
     return *(data_);
 }
 
-template<typename T>
-inline T& Array<T>::back()
+template<typename T, bool template_is_array>
+inline T& Array<T, template_is_array>::back()
 {
     return *(data_ + size_ - 1);
 }
 
-template<typename T>
-inline const T& Array<T>::front() const
+template<typename T, bool template_is_array>
+inline const T& Array<T, template_is_array>::front() const
 {
     return *(data_);
 }
 
-template<typename T>
-inline const T& Array<T>::back() const
+template<typename T, bool template_is_array>
+inline const T& Array<T, template_is_array>::back() const
 {
     return *(data_ + size_ - 1);
 }
 
-template<typename T>
-void Array<T>::reserve(size_t capacity)
+template<typename T, bool template_is_array>
+void Array<T, template_is_array>::reserve(size_t capacity)
 {
     T* data = new T[capacity];
     if (!data)
@@ -223,7 +305,8 @@ void Array<T>::reserve(size_t capacity)
             {
                 data[i] = data_[i];
             }
-            delete[] data_;
+            // free current memory and switch to newly created one
+            freememory();
         }
         capacity_ = capacity;
         size_ = new_size;
@@ -232,21 +315,21 @@ void Array<T>::reserve(size_t capacity)
     
 }
 
-template<typename T>
-void Array<T>::resize(size_t size)
+template<typename T, bool template_is_array>
+void Array<T, template_is_array>::resize(size_t size)
 {
     reserve(size);
     size_ = size;
 }
 
-template<typename T>
-void Array<T>::clear()
+template<typename T, bool template_is_array>
+void Array<T, template_is_array>::clear()
 {
     size_ = 0;
 }
 
-template<typename T>
-void Array<T>::push_back(const T& value)
+template<typename T, bool template_is_array>
+void Array<T, template_is_array>::push_back(const T& value)
 {
     if (size_ >= capacity_)
     {
@@ -255,8 +338,8 @@ void Array<T>::push_back(const T& value)
     data_[size_++] = value;
 }
 
-template<typename T>
-void Array<T>::pop_back()
+template<typename T, bool template_is_array>
+void Array<T, template_is_array>::pop_back()
 {
     if (size_ > 0)
     {
@@ -264,15 +347,15 @@ void Array<T>::pop_back()
     }
 }
 
-template<typename T>
-void Array<T>::shrink_to_fit()
+template<typename T, bool template_is_array>
+void Array<T, template_is_array>::shrink_to_fit()
 {
     capacity_ = size_;
     reserve(size_);
 }
 
-template<typename T>
-T& Array<T>::at(size_t index)
+template<typename T, bool template_is_array>
+T& Array<T, template_is_array>::at(size_t index)
 {
     if(index >= capacity_ || index >= size_)
     {
@@ -285,14 +368,14 @@ T& Array<T>::at(size_t index)
     }
 }
 
-template<typename T>
-T& Array<T>::operator[](size_t index)
+template<typename T, bool template_is_array>
+T& Array<T, template_is_array>::operator[](size_t index)
 {
     return *(data_ + index);
 }
 
-template<typename T>
-Array<T>& Array<T>::operator=(const Array<T>& array)
+template<typename T, bool template_is_array>
+Array<T, template_is_array>& Array<T, template_is_array>::operator=(const Array<T, template_is_array>& array)
 {
     delete[] data_;
     data_ = new T[array.capacity()];
@@ -314,8 +397,8 @@ Array<T>& Array<T>::operator=(const Array<T>& array)
 
 
 // Misc
-template<typename T>
-size_t Array<T>::crop(size_t start_idx, size_t end_idx)
+template<typename T, bool template_is_array>
+size_t Array<T, template_is_array>::crop(size_t start_idx, size_t end_idx)
 {
     if (start_idx >= end_idx || start_idx < 0 || end_idx > size_)
     {
@@ -336,8 +419,8 @@ size_t Array<T>::crop(size_t start_idx, size_t end_idx)
     }
 }
 
-template<typename T>
-void Array<T>::flip()
+template<typename T, bool template_is_array>
+void Array<T, template_is_array>::flip()
 {
     if(size_ == 0 || size_ == 1)
     {
@@ -345,8 +428,8 @@ void Array<T>::flip()
     }
     else
     {
-        typename Array<T>::iterator first = this->begin();
-        typename Array<T>::iterator last = this->end() - 1;
+        typename Array<T, template_is_array>::iterator first = this->begin();
+        typename Array<T, template_is_array>::iterator last = this->end() - 1;
         while(first < last)
         {
             T tmp = *first;
@@ -356,8 +439,8 @@ void Array<T>::flip()
     }
 }
 
-template<typename T>
-void Array<T>::switch_elements(size_t index1, size_t index2)
+template<typename T, bool template_is_array>
+void Array<T, template_is_array>::switch_elements(size_t index1, size_t index2)
 {
     if (index1 >= size_ || index2 >= size_)
     {
@@ -372,20 +455,20 @@ void Array<T>::switch_elements(size_t index1, size_t index2)
     
 }
 
-template<typename T>
-void Array<T>::switch_to_top(size_t index)
+template<typename T, bool template_is_array>
+void Array<T, template_is_array>::switch_to_top(size_t index)
 {
     this->switch_elements(index, size_ - 1);
 }
 
-template<typename T>
-void Array<T>::switch_to_bottom(size_t index)
+template<typename T, bool template_is_array>
+void Array<T, template_is_array>::switch_to_bottom(size_t index)
 {
     this->switch_elements(index, 0);
 }
 
-template<typename T>
-void Array<T>::move_to_top(size_t index)
+template<typename T, bool template_is_array>
+void Array<T, template_is_array>::move_to_top(size_t index)
 {
     if (index >= size_)
     {
@@ -403,8 +486,8 @@ void Array<T>::move_to_top(size_t index)
     }
 }
 
-template<typename T>
-void Array<T>::move_to_bottom(size_t index)
+template<typename T, bool template_is_array>
+void Array<T, template_is_array>::move_to_bottom(size_t index)
 {
     if (index >= size_)
     {
