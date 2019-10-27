@@ -57,8 +57,15 @@ namespace internal
     {
         static void freememory(Array<T, template_is_array>* that, size_t index)
         {
-            // If it is non-pointer type (e.g. class) do nothing
-            // delete[] data_ later will invoke destructors
+            // If it is non-pointer type (e.g. class)
+            if (!that->empty())
+            {
+                for(size_t i = index; i < that->size(); ++i)
+                {
+                    // std::cout << "Destructor" << i << std::endl << std::flush;
+                    that->at(i).~T();   
+                }
+            }
         }
     };
 
@@ -74,6 +81,7 @@ namespace internal
                 {
                     if (template_is_array)
                     {
+                        // std::cout << "Del[]" << std::endl << std::flush;
                         if (that->at(i) != NULL)
                         {
                             delete[] that->at(i);
@@ -84,11 +92,13 @@ namespace internal
                     {
                         if (that->at(i) != NULL)
                         {
+                            // std::cout << "Del" << "\t" << std::flush;
                             delete that->at(i);
                             that->at(i) = NULL;
                         }
                     }
                 }
+                //std::cout << std::endl;
             }
         }
     };
@@ -99,9 +109,11 @@ namespace internal
         static void copy(const Array<T, template_is_array>& from, Array<T, template_is_array>* to,
                          size_t start_index, size_t end_index)
         {
+            std::cout << "Ref copy" << std::endl << std::flush;
             if (!from.empty())
             {
-                to->reserve(from.size());
+                to->resize(from.capacity());
+                //to->reserve(from.capacity());
                 for(size_t i = 0; i < from.size(); ++i)
                 {
                     to->at(i) = from.at(i);
@@ -116,10 +128,11 @@ namespace internal
         static void copy(const Array<T*, template_is_array>& from, Array<T*, template_is_array>* to,
                          size_t start_index, size_t end_index)
         {
-            std::cout << "Deep copy" << std::endl;
+            std::cout << "Deep copy" << std::endl << std::flush;
             if (!from.empty())
             {
-                to->resize(from.size());
+                to->resize(from.capacity());
+                //to->reserve(from.capacity());
                 for(size_t i = 0; i < from.size(); ++i)
                 {
                     to->at(i) = new T(*(from.at(i)));
@@ -139,9 +152,11 @@ public:
 
 // Constructors, destructor (self-explanatory)
     Array();
-    explicit Array(size_t size);
-    explicit Array(size_t size, T value);
+    explicit Array(const size_t size);
+    explicit Array(const size_t size, const T value);
+    // Create this array and copy elements (not necessarily data elements are pointing to!)
     Array(const Array<T, template_is_array>& array);
+    // TODO: add constructor that creates with deep_copy
     ~Array();
 
     // Free allocated memory in every way
@@ -152,8 +167,8 @@ public:
     inline size_t capacity() const;
     inline bool empty() const;
     
-    void reserve(size_t capacity);
-    void resize(size_t size);
+    void reserve(const size_t capacity);
+    void resize(const size_t size);
     void clear();
     void shrink_to_fit();   
     
@@ -164,15 +179,19 @@ public:
     inline const T& front() const;
     inline const T& back() const;
 
+    // Copies all data elements of vector are pointing to!
     void deep_copy(const Array<T, template_is_array>& array);
 
     void push_back(const T& value);
     void pop_back();
 
-    T& at(size_t index);
-    const T& at(size_t index) const;
+    T& at(const size_t index);
+    const T& at(const size_t index) const;
 
-    T& operator[](size_t index);
+    T& operator[](const size_t index);
+
+    // BE CAREFUL this copies elements of array (not necessarily data it is pointing to)
+    // different from deep copy
     Array<T, template_is_array>& operator=(const Array<T, template_is_array>& array);
 
 // Misc    
@@ -180,22 +199,22 @@ public:
     void flip();
     
     // Crop array from start to end index and resize it
-    size_t crop(size_t start_idx, size_t end_idx);
+    size_t crop(const size_t start_idx, const size_t end_idx);
 
     // Switch elements at index1 and index2
-    void switch_elements(size_t index1, size_t index2);
+    void switch_elements(const size_t index1, const size_t index2);
     
     // Move element on position index to top of array (array size is same)
-    void move_to_top(size_t index);
+    void move_to_top(const size_t index);
     
     // Swith element on position index with last element
-    void switch_to_top(size_t index);
+    void switch_to_top(const size_t index);
 
     // Move element on position index to the bottom of array (array size is same)    
-    void move_to_bottom(size_t index);
+    void move_to_bottom(const size_t index);
 
     // Switch element on positin index with first element
-    void switch_to_bottom(size_t index);
+    void switch_to_bottom(const size_t index);
 
 private:
     T* data_;
@@ -216,7 +235,7 @@ Array<T, template_is_array>::Array()
 {}
 
 template<typename T, bool template_is_array>
-Array<T, template_is_array>::Array(size_t size)
+Array<T, template_is_array>::Array(const size_t size)
     : size_(size), capacity_(size)
 {
     data_ = new T[size];
@@ -227,7 +246,7 @@ Array<T, template_is_array>::Array(size_t size)
 }
 
 template<typename T, bool template_is_array>
-Array<T, template_is_array>::Array(size_t size, T value)
+Array<T, template_is_array>::Array(const size_t size, const T value)
     :size_(size), capacity_(size)
 {
     data_ = new T[size_];
@@ -257,10 +276,12 @@ Array<T, template_is_array>::Array(const Array<T, template_is_array>& array)
     }
     else
     {
+
         for(size_t idx = 0; idx < size_; ++idx)
         {
             data_[idx] = array.data_[idx];
         }
+        // internal::CopyHelper<T, template_is_array>::copy(array, this, 0, array.size());
     }
 }
 
@@ -274,18 +295,16 @@ template<typename T, bool template_is_array>
 void Array<T, template_is_array>::freememory()
 {
     internal::MemoryFreeHelper<T, template_is_array>::freememory(this, 0);
-    if (!this->empty())
-    {
-        delete[] data_;
-    }
 }
 
 template<typename T, bool template_is_array>
 Array<T, template_is_array>::~Array()
 {
+
     freememory();
     size_ = 0;
     capacity_ = 0;
+    // std::cout << "Array destructed" << std::endl << std::flush;
 }
 
 
@@ -345,7 +364,7 @@ inline const T& Array<T, template_is_array>::back() const
 }
 
 template<typename T, bool template_is_array>
-void Array<T, template_is_array>::reserve(size_t capacity)
+void Array<T, template_is_array>::reserve(const size_t capacity)
 {
     if (capacity <= capacity_)
     {
@@ -385,7 +404,7 @@ void Array<T, template_is_array>::reserve(size_t capacity)
 }
 
 template<typename T, bool template_is_array>
-void Array<T, template_is_array>::resize(size_t size)
+void Array<T, template_is_array>::resize(const size_t size)
 {
     reserve(size);
     size_ = size;
@@ -424,7 +443,7 @@ void Array<T, template_is_array>::shrink_to_fit()
 }
 
 template<typename T, bool template_is_array>
-T& Array<T, template_is_array>::at(size_t index)
+T& Array<T, template_is_array>::at(const size_t index)
 {
     if(index >= capacity_ || index >= size_)
     {
@@ -438,7 +457,7 @@ T& Array<T, template_is_array>::at(size_t index)
 }
 
 template<typename T, bool template_is_array>
-const T& Array<T, template_is_array>::at(size_t index) const
+const T& Array<T, template_is_array>::at(const size_t index) const
 {
     if(index >= capacity_ || index >= size_)
     {
@@ -452,7 +471,7 @@ const T& Array<T, template_is_array>::at(size_t index) const
 }
 
 template<typename T, bool template_is_array>
-T& Array<T, template_is_array>::operator[](size_t index)
+T& Array<T, template_is_array>::operator[](const size_t index)
 {
     return *(data_ + index);
 }
@@ -460,7 +479,10 @@ T& Array<T, template_is_array>::operator[](size_t index)
 template<typename T, bool template_is_array>
 Array<T, template_is_array>& Array<T, template_is_array>::operator=(const Array<T, template_is_array>& array)
 {
-    delete[] data_;
+    if (!this->empty())
+    {
+        delete[] data_;
+    }
     data_ = new T[array.capacity()];
     if (!data_)
     {
@@ -473,7 +495,7 @@ Array<T, template_is_array>& Array<T, template_is_array>::operator=(const Array<
         for(size_t i = 0; i < size_; ++i)
         {
             data_[i] = array.data_[i];
-        }
+        }       
     }
     return *this;
 }
@@ -481,7 +503,7 @@ Array<T, template_is_array>& Array<T, template_is_array>::operator=(const Array<
 
 // Misc
 template<typename T, bool template_is_array>
-size_t Array<T, template_is_array>::crop(size_t start_idx, size_t end_idx)
+size_t Array<T, template_is_array>::crop(const size_t start_idx, const size_t end_idx)
 {
     if (start_idx >= end_idx || start_idx < 0 || end_idx > size_)
     {
@@ -492,12 +514,15 @@ size_t Array<T, template_is_array>::crop(size_t start_idx, size_t end_idx)
     {
         // Move all data from start_idx -> end_idx to beginning of array and resize it
         size_t new_size = end_idx - start_idx;
+        T* tmp;
         for(size_t i = 0; i < new_size; ++i)
         {
-            T tmp = this->at(i);
+            tmp = new T(this->at(i));
             this->at(i) = this->at(start_idx + i);
-            this->at(start_idx + i) = tmp;
+            this->at(start_idx + i) = *tmp;
         }
+        tmp = new T();
+        delete tmp;
         internal::MemoryFreeHelper<T, template_is_array>::freememory(this, new_size);
         capacity_ = new_size;
         size_ = new_size;
@@ -514,19 +539,15 @@ void Array<T, template_is_array>::flip()
     }
     else
     {
-        typename Array<T, template_is_array>::iterator first = this->begin();
-        typename Array<T, template_is_array>::iterator last = this->end() - 1;
-        while(first < last)
+        for(size_t i = 0; i < (size_t)(size_/2); ++i)
         {
-            T tmp = *first;
-            *(first++) = *last;
-            *(last--) = tmp;
+            switch_elements(i, size_-1-i);
         }   
     }
 }
 
 template<typename T, bool template_is_array>
-void Array<T, template_is_array>::switch_elements(size_t index1, size_t index2)
+void Array<T, template_is_array>::switch_elements(const size_t index1, const size_t index2)
 {
     if (index1 >= size_ || index2 >= size_)
     {
@@ -534,27 +555,31 @@ void Array<T, template_is_array>::switch_elements(size_t index1, size_t index2)
     }
     else
     {  
-        T tmp = this->at(index1);
+        T* tmp = new T(this->at(index1)); // make it a pointer so when it goeas out of scope it doesn't destruct and delete all data inside
         this->at(index1) = this->at(index2);
-        this->at(index2) = tmp;
+        this->at(index2) = *tmp;
+        
+        // make it empty and destruct
+        tmp = new T();
+        delete tmp;
     }
     
 }
 
 template<typename T, bool template_is_array>
-void Array<T, template_is_array>::switch_to_top(size_t index)
+void Array<T, template_is_array>::switch_to_top(const size_t index)
 {
     this->switch_elements(index, size_ - 1);
 }
 
 template<typename T, bool template_is_array>
-void Array<T, template_is_array>::switch_to_bottom(size_t index)
+void Array<T, template_is_array>::switch_to_bottom(const size_t index)
 {
     this->switch_elements(index, 0);
 }
 
 template<typename T, bool template_is_array>
-void Array<T, template_is_array>::move_to_top(size_t index)
+void Array<T, template_is_array>::move_to_top(const size_t index)
 {
     if (index >= size_)
     {
@@ -562,18 +587,22 @@ void Array<T, template_is_array>::move_to_top(size_t index)
     }
     else
     {
-        T tmp = this->at(index);
+        size_t i = index;
+        T* tmp = new T(this->at(index));
         size_t next = index + 1;
-        for(; next < size_; ++next, ++index)
+        for(; next < size_; ++next, ++i)
         {
-            this->at(index) = this->at(next);
+            this->at(i) = this->at(next);
         }
-        this->at(index) = tmp;
+        this->at(i) = *tmp;
+
+        tmp = new T();
+        delete tmp;
     }
 }
 
 template<typename T, bool template_is_array>
-void Array<T, template_is_array>::move_to_bottom(size_t index)
+void Array<T, template_is_array>::move_to_bottom(const size_t index)
 {
     if (index >= size_)
     {
@@ -581,12 +610,17 @@ void Array<T, template_is_array>::move_to_bottom(size_t index)
     }
     else
     {
-        T tmp = this->at(index);
+        T* tmp = new T(this->at(index));
+        size_t i = index;
         size_t prev = index - 1;
         while(prev != 0)
         {
-            this->at(index--) = this->at(prev--);
+            this->at(i--) = this->at(prev--);
         }
-        this->at(prev) = tmp;
+        this->at(i) = this->at(prev);
+        this->at(prev) = *tmp;
+
+        tmp = new T();
+        delete tmp;
     }
 }

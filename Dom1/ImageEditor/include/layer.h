@@ -1,7 +1,7 @@
 // 
 // layer.h
 //
-// Created by Stefan Stepanovic on 6/10/2019
+// Created by Stefan Stepanovic on 26/10/2019
 
 #pragma once
 
@@ -14,8 +14,11 @@ typedef struct pixel
     uchar r, g, b;
 
     pixel();
-    pixel(uchar r, uchar g, uchar b);
+    pixel(const uchar r, const uchar g, const uchar b);
     ~pixel();
+
+    void set(const struct pixel& value);
+    void set(const uchar r, const uchar g, const uchar b);
 
     void invert();
 
@@ -28,33 +31,40 @@ typedef struct pixel
 class Layer
 {
 public:
+// Constructors, destructors
     Layer();
-    Layer(size_t height, size_t width);
-    Layer(size_t height, size_t width, int opacity);
+    Layer(const size_t height, const size_t width, const bool is_original=false);
+    Layer(const size_t height, const size_t width, const int opacity, const bool is_original=false);
     
     ~Layer();
 
+// Data access
     Array<Pixel*>& row(size_t row);
 
     size_t height();
     size_t width();
 
-    Pixel*& at(size_t height, size_t width);
-    
+    Pixel*& at(const size_t height, const size_t width);
+
+// Augmentation
     void invert();
 
     void flipVertical();
     void flipHorizontal();
 
-    void crop(int x, int y, int w, int h);
+    void move_to_top(const size_t index);
+    void move_to_bottom(const size_t index);
 
-    void fillRect(int x, int y, int w, int h, Pixel value);
+    void crop(const int y, const int x, const int h, const int w);
 
-    void ereaseRect(int x, int y, int w, int h);
+    void fillRect(const int y, const int x, const int h, int w, const Pixel& value);
+
+    void eraseRect(const int y, const int z, const int h, const int w);
 
 private:
     Array<Array<Pixel*>> data_;
     size_t width_;
     size_t height_;
     int opacity_;
+    bool is_original_;
 };

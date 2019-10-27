@@ -5,6 +5,9 @@
 
 #pragma once
 
+#include "include/dynamic_array.h"
+#include "include/layer.h"
+
 #include <stdlib.h>
 #include <string>
 
@@ -15,6 +18,10 @@
 class ImageEditor
 {
 public:
+// Constructors, destructors
+    ImageEditor();
+    ~ImageEditor();
+
 // Image input/output
     // Load image from string format
     bool loadImage(unsigned char* image);
@@ -35,7 +42,7 @@ public:
     // Set opacity of currently active layer
     void setLayerOpacity(int opacity);
 
-// Image manipulation
+// Image augemntation
     // Invert color of all pixels of active layer
     void invertColors();
     
@@ -65,5 +72,9 @@ public:
     void eraseRect(int x, int y, int w, int h);
 
 private:
-
+    // Store layers in array
+    Array<Layer> data_;
+    size_t height_;
+    size_t width_;
+    Pixel active_pixel_value;
 };

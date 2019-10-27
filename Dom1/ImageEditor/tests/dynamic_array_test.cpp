@@ -46,31 +46,35 @@ int main()
     std::cout << "A: ";
     for(int i = 0; i < a.size(); ++i)
     {
-        std::cout << *a.at(i) << " ";
+        std::cout << a.at(i) << " ";
     }
     std::cout << std::endl;
     std::cout << "B: ";
     for(int i = 0; i < b.size(); ++i)
     {
-        std::cout << *b.at(i) << " ";
+        std::cout << b.at(i) << " ";
     }
     std::cout << std::endl << std::endl;
 
     *a[5] = 100;
+    a.~Array();
     
     std::cout << "A: ";
     for(int i = 0; i < a.size(); ++i)
     {
-        std::cout << *a.at(i) << " ";
+        std::cout << a.at(i) << " ";
     }
     std::cout << std::endl;
     std::cout << "B: ";
     for(int i = 0; i < b.size(); ++i)
     {
-        std::cout << *b.at(i) << " ";
+        std::cout << b.at(i) << " ";
     }
     std::cout << std::endl << std::endl;
-  
+
+    Array<int> k(10);
+    k.crop(0,5);
+    
     //Helper* h = new Helper();
     return 0;
 }

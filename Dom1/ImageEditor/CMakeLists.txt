@@ -19,3 +19,5 @@ link_directories(Release/lib)
 add_subdirectory(tests)
 
 add_dependencies(dynamic_array_test dynamic_array)
+add_dependencies(layer dynamic_array)
+add_dependencies(layer_test layer)
