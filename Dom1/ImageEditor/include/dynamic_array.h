@@ -30,11 +30,19 @@ static void deleteIfPointer(T* p, bool pointer_to_array)
     std::cout << "Deleting" << std::endl;
     if (pointer_to_array)
     {
-        delete[] p;
+        if (p != NULL)
+        {
+            delete[] p;
+            p = NULL;
+        }
     }
     else
     {
-        delete p;
+        if (p != NULL)
+        {
+            delete p;
+            p = NULL;
+        }
     }
     
 }
@@ -66,12 +74,55 @@ namespace internal
                 {
                     if (template_is_array)
                     {
-                        delete[] that->at(i);
+                        if (that->at(i) != NULL)
+                        {
+                            delete[] that->at(i);
+                            that->at(i) = NULL;
+                        }
                     }
                     else
                     {
-                        delete that->at(i);
+                        if (that->at(i) != NULL)
+                        {
+                            delete that->at(i);
+                            that->at(i) = NULL;
+                        }
                     }
+                }
+            }
+        }
+    };
+
+    template<typename T, bool template_is_array>
+    struct CopyHelper
+    {
+        static void copy(const Array<T, template_is_array>& from, Array<T, template_is_array>* to,
+                         size_t start_index, size_t end_index)
+        {
+            if (!from.empty())
+            {
+                to->reserve(from.size());
+                for(size_t i = 0; i < from.size(); ++i)
+                {
+                    to->at(i) = from.at(i);
+                }
+            }
+        }
+    };
+
+    template<typename T, bool template_is_array>
+    struct CopyHelper<T*, template_is_array>
+    {
+        static void copy(const Array<T*, template_is_array>& from, Array<T*, template_is_array>* to,
+                         size_t start_index, size_t end_index)
+        {
+            std::cout << "Deep copy" << std::endl;
+            if (!from.empty())
+            {
+                to->resize(from.size());
+                for(size_t i = 0; i < from.size(); ++i)
+                {
+                    to->at(i) = new T(*(from.at(i)));
                 }
             }
         }
@@ -113,10 +164,13 @@ public:
     inline const T& front() const;
     inline const T& back() const;
 
+    void deep_copy(const Array<T, template_is_array>& array);
+
     void push_back(const T& value);
     void pop_back();
 
     T& at(size_t index);
+    const T& at(size_t index) const;
 
     T& operator[](size_t index);
     Array<T, template_is_array>& operator=(const Array<T, template_is_array>& array);
@@ -211,6 +265,12 @@ Array<T, template_is_array>::Array(const Array<T, template_is_array>& array)
 }
 
 template<typename T, bool template_is_array>
+void Array<T, template_is_array>::deep_copy(const Array<T, template_is_array>& array)
+{
+    internal::CopyHelper<T, template_is_array>::copy(array, this, 0, array.size());
+}
+
+template<typename T, bool template_is_array>
 void Array<T, template_is_array>::freememory()
 {
     internal::MemoryFreeHelper<T, template_is_array>::freememory(this, 0);
@@ -287,31 +347,40 @@ inline const T& Array<T, template_is_array>::back() const
 template<typename T, bool template_is_array>
 void Array<T, template_is_array>::reserve(size_t capacity)
 {
-    T* data = new T[capacity];
-    if (!data)
-    {
-        std::cout << "Mem. allocation failed" << std::endl;
-    }
-    else
+    if (capacity <= capacity_)
     {
         size_t new_size = capacity < size_ ? capacity : size_;
-        if (!this->empty())
+        // free memory that is not being used anymore
+        if (new_size < size_)
         {
-            for(size_t i = 0; i < new_size; ++i)
-            {
-                data[i] = data_[i];
-            }
-            if (new_size < size_)
-            {
-                internal::MemoryFreeHelper<T, template_is_array>::freememory(this, new_size);
-            }
-            // free current memory and switch to newly created one
-            delete[] data_;
+            internal::MemoryFreeHelper<T, template_is_array>::freememory(this, new_size);
         }
         capacity_ = capacity;
         size_ = new_size;
-        data_ = data;
     }
+    else
+    {
+        T* data = new T[capacity];
+        if (!data)
+        {
+            std::cout << "Mem. allocation failed" << std::endl;
+        }
+        else
+        {
+            if (!this->empty())
+            {
+                for(size_t i = 0; i < size_; ++i)
+                {
+                    data[i] = data_[i];
+                }
+                delete[] data_;
+            }
+            capacity_ = capacity;
+            data_ = data;
+        }
+        
+    }
+    
     
 }
 
@@ -351,7 +420,6 @@ void Array<T, template_is_array>::pop_back()
 template<typename T, bool template_is_array>
 void Array<T, template_is_array>::shrink_to_fit()
 {
-    capacity_ = size_;
     reserve(size_);
 }
 
@@ -367,6 +435,20 @@ T& Array<T, template_is_array>::at(size_t index)
     {
         return *(data_ + index);
     }
+}
+
+template<typename T, bool template_is_array>
+const T& Array<T, template_is_array>::at(size_t index) const
+{
+    if(index >= capacity_ || index >= size_)
+    {
+        std::cout << "Invalid index!" << std::endl;
+        exit;
+    }
+    else
+    {
+        return *(data_ + index);
+    }   
 }
 
 template<typename T, bool template_is_array>
