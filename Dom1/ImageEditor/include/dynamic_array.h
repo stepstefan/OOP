@@ -124,10 +124,9 @@ namespace internal
         static void copy(const Array<T, template_is_array>& from, Array<T, template_is_array>* to,
                          size_t start_index, size_t end_index)
         {
-            std::cout << "Ref copy" << std::endl << std::flush;
             if (!from.empty())
             {
-                to->resize(from.capacity());
+                to->resize(from.size());
                 //to->reserve(from.capacity());
                 for(size_t i = 0; i < from.size(); ++i)
                 {
@@ -143,14 +142,39 @@ namespace internal
         static void copy(const Array<T*, template_is_array>& from, Array<T*, template_is_array>* to,
                          size_t start_index, size_t end_index)
         {
-            std::cout << "Deep copy" << std::endl << std::flush;
             if (!from.empty())
             {
                 to->resize(from.capacity());
                 //to->reserve(from.capacity());
                 for(size_t i = 0; i < from.size(); ++i)
                 {
-                    to->at(i) = new T(*(from.at(i)));
+                    if(from.at(i) != NULL)
+                    {
+                        to->at(i) = new T(*(from.at(i)));
+                    }
+                    else
+                    {
+                        to->at(i) = NULL;
+                    }
+                    
+                }
+            }
+        }
+    };
+
+    template<typename T, bool template_is_array>
+    struct CopyHelper<Array<T, template_is_array>, template_is_array>
+    {
+        static void copy(const Array<Array<T, template_is_array>, template_is_array>& from, Array<Array<T, template_is_array>, template_is_array>* to,
+                         size_t start_index, size_t end_index)
+        {
+            if (!from.empty())
+            {
+                to->resize(from.capacity());
+                //to->reserve(from.capacity());
+                for(size_t i = 0; i < from.size(); ++i)
+                {
+                    to->at(i).deep_copy(from.at(i));
                 }
             }
         }

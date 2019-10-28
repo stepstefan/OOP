@@ -135,22 +135,22 @@ int main()
     }
     std::cout << std::endl << std::endl << std::flush;
 
-    Array<Layer> img;
-    img.push_back(layer);
-    Layer layer2(10, 10);
+    Array<Layer*> img;
+    img.push_back(&layer);
+    Layer* layer2 = new Layer(10, 10);
     img.push_back(layer2);
-    // img.move_to_top(0);
-    // img.pop_back();
+    img.move_to_top(0);
+    img.pop_back();
     std::cout << img.size() << std::endl;
     for(int k = 0; k < img.size(); ++k)
     {
-        for(size_t i = 0; i < img.at(k).height(); ++i)
+        for(size_t i = 0; i < img.at(k)->height(); ++i)
         {
-            for(size_t j = 0; j < img.at(k).width(); ++j)
+            for(size_t j = 0; j < img.at(k)->width(); ++j)
             {
-                if (img.at(k).at(i, j) != NULL)
+                if (img.at(k)->at(i, j) != NULL)
                 {
-                    std::cout << int(img.at(k).at(i, j)->r) << " " << std::flush;
+                    std::cout << int(img.at(k)->at(i, j)->r) << " " << std::flush;
                 }
                 else
                 {

@@ -124,7 +124,8 @@ Pixel*& Layer::at(const size_t height, const size_t width)
 
 Layer& Layer::operator=(const Layer& layer)
 {
-    data_ = layer.data_;
+    //data_ = layer.data_;
+    data_.deep_copy(layer.data_);
     height_ = layer.height_;
     width_ = layer.width_;
     opacity_ = layer.opacity_;

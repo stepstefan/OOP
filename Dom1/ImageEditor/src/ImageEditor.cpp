@@ -25,3 +25,8 @@ void ImageEditor::deleteLayer()
     data_.back().freememory();
     data_.pop_back();
 }
+
+bool ImageEditor::loadImage(unsigned char* image)
+{
+    
+}
