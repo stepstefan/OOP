@@ -22,5 +22,6 @@ void ImageEditor::addLayer()
 
 void ImageEditor::deleteLayer()
 {
+    data_.back().freememory();
     data_.pop_back();
 }

@@ -75,9 +75,15 @@ Layer::Layer(const size_t width, const size_t height, const int opacity, const b
 Layer::~Layer()
 {
     // No need for invoking deconstructor of array (it will automatically be called)
+    data_.freememory();
     height_ = 0;
     width_ = 0;
     opacity_ = 0;
+}
+
+void Layer::freememory()
+{
+    data_.freememory();
 }
 
 Array<Pixel*>& Layer::row(const size_t row)
@@ -114,6 +120,20 @@ Pixel*& Layer::at(const size_t height, const size_t width)
     {
         return data_.at(height).at(width);
     }
+}
+
+Layer& Layer::operator=(const Layer& layer)
+{
+    data_ = layer.data_;
+    height_ = layer.height_;
+    width_ = layer.width_;
+    opacity_ = layer.opacity_;
+}
+
+void Layer::reserve(const size_t capacity)
+{
+    data_.reserve(capacity);
+    height_ = data_.size();
 }
 
 void Layer::invert()

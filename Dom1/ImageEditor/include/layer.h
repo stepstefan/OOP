@@ -38,6 +38,8 @@ public:
     
     ~Layer();
 
+    void freememory();
+
 // Data access
     Array<Pixel*>& row(size_t row);
 
@@ -45,6 +47,8 @@ public:
     size_t width();
 
     Pixel*& at(const size_t height, const size_t width);
+
+    void reserve(const size_t capacity);
 
 // Augmentation
     void invert();
@@ -60,6 +64,8 @@ public:
     void fillRect(const int y, const int x, const int h, int w, const Pixel& value);
 
     void eraseRect(const int y, const int z, const int h, const int w);
+
+    Layer& operator=(const Layer& layer);
 
 private:
     Array<Array<Pixel*>> data_;

@@ -58,14 +58,14 @@ namespace internal
         static void freememory(Array<T, template_is_array>* that, size_t index)
         {
             // If it is non-pointer type (e.g. class)
-            if (!that->empty())
-            {
-                for(size_t i = index; i < that->size(); ++i)
-                {
-                    // std::cout << "Destructor" << i << std::endl << std::flush;
-                    that->at(i).~T();   
-                }
-            }
+            // if (!that->empty())
+            // {
+            //     for(size_t i = index; i < that->size(); ++i)
+            //     {
+            //         // std::cout << "Destructor" << i << std::endl << std::flush;
+            //         that->at(i).~T();   
+            //     }
+            // }
         }
     };
 
@@ -99,6 +99,21 @@ namespace internal
                     }
                 }
                 //std::cout << std::endl;
+            }
+        }
+    };
+
+    template<typename T, bool template_is_array>
+    struct MemoryFreeHelper<Array<T, template_is_array>, template_is_array>
+    {
+        static void freememory(Array<Array<T, template_is_array>, template_is_array>* that, size_t index)
+        {
+            if (!that->empty())
+            {
+                for(size_t i = index; i < that->size(); ++i)
+                {
+                    that->at(i).freememory();
+                }
             }
         }
     };
@@ -231,7 +246,7 @@ private:
 // Constructors
 template<typename T, bool template_is_array>
 Array<T, template_is_array>::Array()
-    : size_(0), capacity_(0)
+    : size_(0), capacity_(0), data_(0)
 {}
 
 template<typename T, bool template_is_array>
@@ -300,8 +315,15 @@ void Array<T, template_is_array>::freememory()
 template<typename T, bool template_is_array>
 Array<T, template_is_array>::~Array()
 {
-
-    freememory();
+    // Default destructor does not free all memory
+    // if (is_pointer<T>::value)
+    // {
+    //     freememory();
+    // }
+    if(data_)
+    {
+        delete[] data_;
+    }
     size_ = 0;
     capacity_ = 0;
     // std::cout << "Array destructed" << std::endl << std::flush;
