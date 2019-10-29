@@ -41,7 +41,7 @@ public:
     void freememory();
 
 // Data access
-    Array<Pixel*>& row(size_t row);
+    Array<Pixel*>* row(size_t row);
 
     size_t height();
     size_t width();
@@ -68,7 +68,7 @@ public:
     Layer& operator=(const Layer& layer);
 
 private:
-    Array<Array<Pixel*>> data_;
+    Array<Array<Pixel*>*> data_;
     size_t width_;
     size_t height_;
     int opacity_;

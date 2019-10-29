@@ -16,15 +16,15 @@ int main()
     size_t width = 10;
     size_t height = 10;
 
-    Layer layer(height, width);
+    Layer* layer = new Layer(height, width);
 
-    for(size_t i = 0; i < layer.height(); ++i)
+    for(size_t i = 0; i < layer->height(); ++i)
     {
-        for(size_t j = 0; j < layer.width(); ++j)
+        for(size_t j = 0; j < layer->width(); ++j)
         {
-            if (layer.at(i, j) != NULL)
+            if (layer->at(i, j) != NULL)
             {
-                std::cout << int(layer.at(i, j)->r) << " " << std::flush;
+                std::cout << int(layer->at(i, j)->r) << " " << std::flush;
             }
             else
             {
@@ -35,24 +35,24 @@ int main()
         std::cout << std::endl << std::flush;
     }
 
-    for(size_t i = 0; i < layer.height(); ++i)
+    for(size_t i = 0; i < layer->height(); ++i)
     {
-        for(size_t j = 0; j < layer.width(); ++j)
+        for(size_t j = 0; j < layer->width(); ++j)
         {
-            delete layer.at(i, j);    
-            layer.at(i, j) = new Pixel(i,j,0); 
+            delete layer->at(i, j);    
+            layer->at(i, j) = new Pixel(i,j,0); 
         }
     }
 
 
 
-    for(size_t i = 0; i < layer.height(); ++i)
+    for(size_t i = 0; i < layer->height(); ++i)
     {
-        for(size_t j = 0; j < layer.width(); ++j)
+        for(size_t j = 0; j < layer->width(); ++j)
         {
-            if (layer.at(i, j) != NULL)
+            if (layer->at(i, j) != NULL)
             {
-                std::cout << int(layer.at(i, j)->r) << " " << std::flush;
+                std::cout << int(layer->at(i, j)->r) << " " << std::flush;
             }
             else
             {
@@ -113,17 +113,17 @@ int main()
     // //     std::cout << std::endl;
     // // }
 
-    layer.crop(2, 0, 5, 10);
-    // layer->eraseRect(2,2,3,3);
+    layer->crop(2, 0, 5, 10);
+    layer->eraseRect(2,2,3,3);
 
     std::cout << "After erase" << std::endl; 
-    for(size_t i = 0; i < layer.height(); ++i)
+    for(size_t i = 0; i < layer->height(); ++i)
     {
-        for(size_t j = 0; j < layer.width(); ++j)
+        for(size_t j = 0; j < layer->width(); ++j)
         {
-            if (layer.at(i, j) != NULL)
+            if (layer->at(i, j) != NULL)
             {
-                std::cout << int(layer.at(i, j)->r) << " " << std::flush;
+                std::cout << int(layer->at(i, j)->r) << " " << std::flush;
             }
             else
             {
@@ -136,7 +136,7 @@ int main()
     std::cout << std::endl << std::endl << std::flush;
 
     Array<Layer*> img;
-    img.push_back(&layer);
+    img.push_back(layer);
     Layer* layer2 = new Layer(10, 10);
     img.push_back(layer2);
     img.move_to_top(0);

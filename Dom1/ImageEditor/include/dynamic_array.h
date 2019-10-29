@@ -103,20 +103,20 @@ namespace internal
         }
     };
 
-    template<typename T, bool template_is_array>
-    struct MemoryFreeHelper<Array<T, template_is_array>, template_is_array>
-    {
-        static void freememory(Array<Array<T, template_is_array>, template_is_array>* that, size_t index)
-        {
-            if (!that->empty())
-            {
-                for(size_t i = index; i < that->size(); ++i)
-                {
-                    that->at(i).freememory();
-                }
-            }
-        }
-    };
+    // template<typename T, bool template_is_array>
+    // struct MemoryFreeHelper<Array<T, template_is_array>, template_is_array>
+    // {
+    //     static void freememory(Array<Array<T, template_is_array>, template_is_array>* that, size_t index)
+    //     {
+    //         if (!that->empty())
+    //         {
+    //             for(size_t i = index; i < that->size(); ++i)
+    //             {
+    //                 that->at(i).freememory();
+    //             }
+    //         }
+    //     }
+    // };
 
     template<typename T, bool template_is_array>
     struct CopyHelper
@@ -340,10 +340,7 @@ template<typename T, bool template_is_array>
 Array<T, template_is_array>::~Array()
 {
     // Default destructor does not free all memory
-    // if (is_pointer<T>::value)
-    // {
-    //     freememory();
-    // }
+    freememory();
     if(data_)
     {
         delete[] data_;
@@ -558,17 +555,15 @@ size_t Array<T, template_is_array>::crop(const size_t start_idx, const size_t en
     }
     else
     {
-        // Move all data from start_idx -> end_idx to beginning of array and resize it
+        // // Move all data from start_idx -> end_idx to beginning of array and resize it
         size_t new_size = end_idx - start_idx;
-        T* tmp;
+        
         for(size_t i = 0; i < new_size; ++i)
         {
-            tmp = new T(this->at(i));
+            T tmp = this->at(i);
             this->at(i) = this->at(start_idx + i);
-            this->at(start_idx + i) = *tmp;
+            this->at(start_idx + i) = tmp;
         }
-        tmp = new T();
-        delete tmp;
         internal::MemoryFreeHelper<T, template_is_array>::freememory(this, new_size);
         capacity_ = new_size;
         size_ = new_size;

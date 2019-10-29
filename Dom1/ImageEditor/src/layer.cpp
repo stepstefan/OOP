@@ -47,27 +47,29 @@ Layer::Layer()
 {}
 
 Layer::Layer(const size_t width, const size_t height, const bool is_original)
-    : width_(width), height_(height), opacity_(0), is_original_(is_original),
-      data_(height, Array<Pixel*, false>(width))
+    : width_(width), height_(height), opacity_(0), is_original_(is_original)
 {
+    data_.reserve(height_);
     for(size_t i = 0; i < height; ++i)
     {
+        data_.push_back(new Array<Pixel*, false>(width));
         for(size_t j = 0; j < width; ++j)
         {
-            data_.at(i).at(j) = NULL;
+            data_.at(i)->at(j) = NULL;
         }
     }
 }
 
 Layer::Layer(const size_t width, const size_t height, const int opacity, const bool is_original)
-    : width_(width), height_(height), opacity_(opacity), is_original_(is_original),
-      data_(height, Array<Pixel*, false>(width))
+    : width_(width), height_(height), opacity_(opacity), is_original_(is_original)
 {
+    data_.reserve(height_);
     for(size_t i = 0; i < height; ++i)
     {
+        data_.push_back(new Array<Pixel*, false>(width));
         for(size_t j = 0; j < width; ++j)
         {
-            data_.at(i).at(j) = NULL;
+            data_.at(i)->at(j) = NULL;
         }
     }
 }
@@ -86,7 +88,7 @@ void Layer::freememory()
     data_.freememory();
 }
 
-Array<Pixel*>& Layer::row(const size_t row)
+Array<Pixel*>* Layer::row(const size_t row)
 {
     if (row > height_)
     {
@@ -118,14 +120,13 @@ Pixel*& Layer::at(const size_t height, const size_t width)
     }
     else
     {
-        return data_.at(height).at(width);
+        return data_.at(height)->at(width);
     }
 }
 
 Layer& Layer::operator=(const Layer& layer)
 {
-    //data_ = layer.data_;
-    data_.deep_copy(layer.data_);
+    data_ = layer.data_;
     height_ = layer.height_;
     width_ = layer.width_;
     opacity_ = layer.opacity_;
@@ -141,7 +142,7 @@ void Layer::invert()
 {
     for(auto& row : data_)
     {
-        for(auto& pixel : row)
+        for(auto& pixel : *row)
         {
             pixel->invert();
         }
@@ -157,7 +158,7 @@ void Layer::flipVertical()
 {
     for(auto& row : data_)
     {
-        row.flip();
+        row->flip();
     }
 }
 
@@ -184,17 +185,17 @@ void Layer::crop(const int y, const int x, const int h, const int w)
         height_ = data_.crop(size_t(y), size_t(y + h));
         if (height_ != h)
         {
-            std::cout << "Unknown crop error!" << std::endl;
+            std::cout << "Unknown height crop error!" << std::endl;
         }
         else
         {
             size_t new_width = (size_t)(w);
             for(auto& row : data_)
             {
-                width_ = row.crop(size_t(x), size_t(x + w));
+                width_ = row->crop(size_t(x), size_t(x + w));
                 if (width_ != new_width)
                 {
-                    std::cout << "Unknown crop error" << std::endl;
+                    std::cout << "Unknown width crop error" << std::endl;
                 }
             }
         }
@@ -214,13 +215,13 @@ void Layer::fillRect(const int y, const int x, const int h, const int w, const P
         {
             for(int j = 0; j < w; ++j)
             {
-                if (data_.at(i + y).at(j + x) != NULL)
+                if (data_.at(i + y)->at(j + x) != NULL)
                 {
-                    data_.at(i + y).at(j + x)->set(value);
+                    data_.at(i + y)->at(j + x)->set(value);
                 }
                 else
                 {
-                    data_.at(i + y).at(j + x) = new Pixel(value);
+                    data_.at(i + y)->at(j + x) = new Pixel(value);
                 }
                 
             }
@@ -242,8 +243,8 @@ void Layer::eraseRect(const int y, const int x, const int h, const int w)
         {
             for(int j = 0; j < w; ++j)
             {
-                delete data_.at(i + y).at(j + x);
-                data_.at(i + y).at(j + x) = NULL;
+                delete data_.at(i + y)->at(j + x);
+                data_.at(i + y)->at(j + x) = NULL;
             }
         }
     }
