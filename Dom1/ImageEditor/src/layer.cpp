@@ -7,14 +7,21 @@
 
 Pixel::pixel()
     : r(0), g(0), b(0)
-{}
+{
+    //
+}
 
 Pixel::pixel(const uchar r, const uchar g, const uchar b)
     : r(r), g(g), b(b)
-{}
+{
+    //
+}
 
 Pixel::~pixel()
-{}
+{
+    // Do nothing
+}
+
 void Pixel::invert()
 {
     r = 255 - r;
@@ -44,7 +51,8 @@ void Pixel::set(const uchar r, const uchar g, const uchar b)
 
 Layer::Layer()
     : width_(0), height_(0), opacity_(0), is_original_(false), data_()
-{}
+{
+}
 
 Layer::Layer(const size_t width, const size_t height, const bool is_original)
     : width_(width), height_(height), opacity_(0), is_original_(is_original)

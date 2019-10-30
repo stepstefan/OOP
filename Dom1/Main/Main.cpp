@@ -1,4 +1,4 @@
-#include "ImageEditor.h"
+#include "../ImageEditor/include/ImageEditor.h"
 using namespace std;
 
 // Broj testova je 12. Testovi su indeksirani brojevima 1 - 12. Test indeksiran brojem 0 je rezervisan za studentovo testiranje koda.
@@ -114,7 +114,7 @@ int main() {
 
 	// Ova for petlja ce da pokrene sve testove [0 - 12]. Modifikujte uslov za 'if' da biste pokretali samo odredjene testove (npr: if(testNumber == 1 || testNumber == 5)).
 	for(testNumber = 0; testNumber <= numberOfTests; testNumber++)
-		if(testNumber == testNumber) test();
+		if(testNumber == 1) test();
 
 	return 0;
 }

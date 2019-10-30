@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.0.0)
 project(ImageEditor VERSION 0.1.0)
 
 set (CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 #create dir for storing libraries in case it gets deleted and configuration is not run again
 add_custom_target(build-time-make-directory ALL COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_BINARY_DIR}/lib)
 
@@ -21,3 +22,4 @@ add_subdirectory(tests)
 add_dependencies(dynamic_array_test dynamic_array)
 add_dependencies(layer dynamic_array)
 add_dependencies(layer_test layer)
+add_dependencies(ImageEditor layer)

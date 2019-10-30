@@ -73,8 +73,9 @@ public:
 
 private:
     // Store layers in array
-    Array<Layer> data_;
+    Array<Layer*> data_;
     size_t height_;
     size_t width_;
     Pixel active_pixel_value;
+    std::string name_;
 };

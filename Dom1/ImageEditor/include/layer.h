@@ -23,6 +23,7 @@ typedef struct pixel
     void invert();
 
     void toGray();
+
 } Pixel;
 
 // Default dynamic matrix class
