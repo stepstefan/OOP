@@ -7,6 +7,7 @@
 
 #include "include/dynamic_array.h"
 #include "include/layer.h"
+#include "math.h"
 
 #include <stdlib.h>
 #include <string>
@@ -78,4 +79,5 @@ private:
     size_t width_;
     Pixel active_pixel_value;
     std::string name_;
+    unsigned char* image_;
 };

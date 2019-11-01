@@ -107,6 +107,13 @@ unsigned char* editImage(unsigned char* input) {
 		break;
 	}
 	delete imageEditor;
+	for(int i = 0; i < 30; i++)
+	{
+		if(output[i] != input[i])
+		{
+			std::cout << i  << "|" << output[i] << "|" << input[i];
+		}
+	}
 	return output;
 }
 
