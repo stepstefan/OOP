@@ -51,11 +51,17 @@ public:
 
     void reserve(const size_t capacity);
 
+    bool isOriginal();
+
 // Augmentation
     void invert();
 
+    void toGray();
+
     void flipVertical();
     void flipHorizontal();
+
+    void setOpacity(int opacity);
 
     void move_to_top(const size_t index);
     void move_to_bottom(const size_t index);

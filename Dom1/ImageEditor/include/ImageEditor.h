@@ -73,6 +73,9 @@ public:
     void eraseRect(int x, int y, int w, int h);
 
 private:
+
+    void findIntersection(int& x, int& y, int& w, int& h);
+
     // Store layers in array
     Array<Layer*> data_;
     size_t height_;

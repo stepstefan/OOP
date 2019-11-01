@@ -146,6 +146,11 @@ void Layer::reserve(const size_t capacity)
     height_ = data_.size();
 }
 
+bool Layer::isOriginal()
+{
+    return is_original_;
+}
+
 void Layer::invert()
 {
     for(auto& row : data_)
@@ -157,17 +162,33 @@ void Layer::invert()
     }
 }
 
-void Layer::flipHorizontal()
+void Layer::toGray()
+{
+    for(auto& row : data_)
+    {
+        for(auto& pixel : *row)
+        {
+            pixel->toGray();
+        }
+    }
+}
+
+void Layer::flipVertical()
 {
     data_.flip();
 }
 
-void Layer::flipVertical()
+void Layer::flipHorizontal()
 {
     for(auto& row : data_)
     {
         row->flip();
     }
+}
+
+void Layer::setOpacity(int opacity)
+{
+    opacity_ = opacity;
 }
 
 void Layer::move_to_bottom(const size_t index)

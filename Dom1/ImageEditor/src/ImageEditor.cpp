@@ -6,6 +6,7 @@
 #include "include/ImageEditor.h"
 #include <cstring>
 
+// Constructor, Destructor
 ImageEditor::ImageEditor()
     : active_pixel_value(), data_()
 {}
@@ -15,6 +16,15 @@ ImageEditor::~ImageEditor()
     // Will automatically destruct array freeing all of it's memory
 }
 
+// Private methods
+void ImageEditor::findIntersection(int& x, int& y, int& w, int& h)
+{
+    
+}
+
+
+
+// Public methods
 bool ImageEditor::loadImage(unsigned char* image)
 {
     image_ = image;
@@ -46,7 +56,7 @@ bool ImageEditor::loadImage(unsigned char* image)
             height_ += int(image[i + j] * pow(16, j));
         }
         i += 4;
-        this->data_.push_back(new Layer(height_, width_));
+        this->data_.push_back(new Layer(height_, width_, true));
         for(int h = height_ - 1; h >= 0; --h)
         {
             for(int w = 0; w < width_; ++w)
@@ -142,35 +152,85 @@ void ImageEditor::deleteLayer()
 
 void ImageEditor::selectLayer(int i)
 {
+    if (i >= data_.size())
+    {
+        std::cout << "Invalid index of layer. Image unchanged!" << std::endl;
+    }
+    else
+    {
+        data_.move_to_top(i);
+    }
+    
 }
 
 void ImageEditor::setLayerOpacity(int opacity)
-{}
+{
+    data_.back()->setOpacity(opacity);
+}
 
 void ImageEditor::invertColors()
-{}
+{
+    for(auto& layer : data_)
+    {
+        layer->invert();
+    }
+}
 
 void ImageEditor::toGrayScale()
-{}
+{
+    for(auto& layer : data_)
+    {
+        layer->toGray();
+    }
+}
 
 void ImageEditor::blur(int size)
 {}
 
 void ImageEditor::flipHorizontal()
-{}
+{
+    for(auto& layer : data_)
+    {
+        layer->flipHorizontal();
+    }
+}
 
 void ImageEditor::flipVertical()
-{}
+{
+    for(auto& layer : data_)
+    {
+        layer->flipVertical();
+    }
+}
 
 void ImageEditor::crop(int x, int y, int w, int h)
-{}
+{
+    findIntersection(x, y, w, h);
+    for(auto& layer : data_)
+    {
+        layer->crop(y, x, h, w);
+    }
+}
 
 void ImageEditor::setActiveColor(std::string hex)
 {}
 
 void ImageEditor::fillRect(int x, int y, int w, int h)
-{}
+{
+    findIntersection(x, y, w, h);
+    data_.back()->fillRect(y, x, h, w, active_pixel_value);
+}
 
 void ImageEditor::eraseRect(int x, int y, int w, int h)
-{}
+{
+    findIntersection(x, y, w, h);
+    if (data_.back()->isOriginal())
+    {
+        std::cout << "Cannot erase on original layer! Image unchanged" << std::endl;
+    }
+    else
+    {
+        data_.back()->eraseRect(y, x, h, w);
+    }
+}
 
