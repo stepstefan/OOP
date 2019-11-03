@@ -50,26 +50,12 @@ void Pixel::set(const uchar r, const uchar g, const uchar b)
 }
 
 Layer::Layer()
-    : width_(0), height_(0), opacity_(0), is_original_(false), data_()
+    : width_(0), height_(0), opacity_(0), data_()
 {
 }
 
-Layer::Layer(const size_t width, const size_t height, const bool is_original)
-    : width_(width), height_(height), opacity_(0), is_original_(is_original)
-{
-    data_.reserve(height_);
-    for(size_t i = 0; i < height; ++i)
-    {
-        data_.push_back(new Array<Pixel*, false>(width));
-        for(size_t j = 0; j < width; ++j)
-        {
-            data_.at(i)->at(j) = NULL;
-        }
-    }
-}
-
-Layer::Layer(const size_t width, const size_t height, const int opacity, const bool is_original)
-    : width_(width), height_(height), opacity_(opacity), is_original_(is_original)
+Layer::Layer(const size_t width, const size_t height, const int opacity)
+    : width_(width), height_(height), opacity_(opacity)
 {
     data_.reserve(height_);
     for(size_t i = 0; i < height; ++i)
@@ -89,6 +75,25 @@ Layer::~Layer()
     height_ = 0;
     width_ = 0;
     opacity_ = 0;
+}
+
+void addPadding(Array<Array<Pixel*>*>& data, size_t padding_y, size_t padding_x)
+{
+    for(size_t i = 0; i < data.size(); ++i)
+    {
+        for(size_t j = 0; j < padding_x; ++j)
+        {
+            data.at(i)->push_back(NULL);
+            data.at(i)->push_front(NULL);
+        }
+    }
+    for(size_t j = 0; j < padding_y; ++j)
+    {
+        Array<Pixel*>* rowf = new Array<Pixel*>(data.at(0)->size(), NULL);
+        Array<Pixel*>* rowb = new Array<Pixel*>(data.at(0)->size(), NULL);
+        data.push_front(rowf);
+        data.push_back(rowb);
+    }
 }
 
 void Layer::freememory()
@@ -123,7 +128,7 @@ Pixel*& Layer::at(const size_t height, const size_t width)
 {
     if (height > height_ || width > width_)
     {
-        std::cout << "Invalid indices" << std::endl;
+        // std::cout << "Invalid indices" << std::endl;
         exit;
     }
     else
@@ -144,11 +149,6 @@ void Layer::reserve(const size_t capacity)
 {
     data_.reserve(capacity);
     height_ = data_.size();
-}
-
-bool Layer::isOriginal()
-{
-    return is_original_;
 }
 
 void Layer::invert()
@@ -201,7 +201,78 @@ void Layer::move_to_top(const size_t index)
     data_.move_to_top(index);
 }
 
-void Layer::crop(const int y, const int x, const int h, const int w)
+
+// Beware! Kernel size must be equal to [h, w]
+Pixel applyKernel(const Array<Array<Pixel*>*>& data, double** kernel, size_t y, size_t x, size_t h, size_t w)
+{
+    double r = 0;
+    double g = 0;
+    double b = 0;
+    for(size_t i = 0; i < h; ++i)
+    {
+        for(size_t j = 0; j < w; ++j)
+        {
+            if(data.at(i+y)->at(j+x) != NULL)
+            {
+                r += double(data.at(i+y)->at(j+x)->r) * kernel[i][j];
+                g += double(data.at(i+y)->at(j+x)->g) * kernel[i][j];
+                b += double(data.at(i+y)->at(j+x)->b) * kernel[i][j];
+            }
+        }
+    }
+    uchar rval = uchar(r);
+    uchar gval = uchar(g);
+    uchar bval = uchar(b);
+    Pixel out(rval, gval, bval);
+    return out;
+}
+
+double** createMeanKernel(const Array<Array<Pixel*>*>& data, size_t y, size_t x, size_t h, size_t w)
+{
+    int cnt = 0;
+    for(size_t i = y; i < y+h; ++i)
+    {
+        for(size_t j = x; j < x+w; ++j)
+        {
+            if(data.at(i)->at(j) != NULL)
+            {
+                cnt++;
+            }
+        }
+    }
+    double** out = new double*[h];
+    for(size_t i = 0; i < h; ++i)
+    {
+        out[i] = new double[w];
+        for(size_t j = 0; j < w; ++j)
+        {
+            out[i][j] = 1.0/cnt;
+        }
+    }
+    return out;
+}
+
+void Layer::blur(const size_t kernel_size)
+{
+    size_t padding_x = kernel_size;
+    size_t padding_y = padding_x;
+
+    Array<Array<Pixel*>*> copy_data(height_);
+    copy_data.deep_copy(data_);
+    std::cout << copy_data.size() << std::endl;
+    addPadding(copy_data, padding_y, padding_x);
+    for(size_t i = 0; i < height_; ++i)
+    {
+        for(size_t j = 0; j < width_; ++j)
+        {
+            double** kernel = createMeanKernel(copy_data, i, j, kernel_size*2+1, kernel_size*2+1);
+            Pixel new_value = applyKernel(copy_data, kernel, i, j, kernel_size*2+1, kernel_size*2+1);
+            data_.at(i)->at(j)->set(new_value);
+        }   
+    }
+}
+
+tuple<size_t> Layer::crop(const int y, const int x, const int h, const int w)
 {
     if(x < 0 || y < 0 || w < 0 || h < 0 ||
        (x + w) > width_ || (y + h) > height_)
@@ -229,6 +300,8 @@ void Layer::crop(const int y, const int x, const int h, const int w)
             }
         }
     }
+    tuple<size_t> shape;
+    shape.set(height_, width_);
 }
 
 void Layer::fillRect(const int y, const int x, const int h, const int w, const Pixel& value)

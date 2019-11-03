@@ -9,6 +9,18 @@
 
 typedef unsigned char uchar; // value of pixel can be from 0 - 255
 
+template<typename T>
+struct tuple
+{
+    T first, second;
+
+    void set(T f, T s)
+    {
+        first = f;
+        second = s;
+    }
+};
+
 typedef struct pixel
 {
     uchar r, g, b;
@@ -34,8 +46,7 @@ class Layer
 public:
 // Constructors, destructors
     Layer();
-    Layer(const size_t height, const size_t width, const bool is_original=false);
-    Layer(const size_t height, const size_t width, const int opacity, const bool is_original=false);
+    Layer(const size_t height, const size_t width, const int opacity = 100);
     
     ~Layer();
 
@@ -51,8 +62,6 @@ public:
 
     void reserve(const size_t capacity);
 
-    bool isOriginal();
-
 // Augmentation
     void invert();
 
@@ -66,7 +75,9 @@ public:
     void move_to_top(const size_t index);
     void move_to_bottom(const size_t index);
 
-    void crop(const int y, const int x, const int h, const int w);
+    void blur(const size_t kernel_size);
+
+    tuple<size_t> crop(const int y, const int x, const int h, const int w);
 
     void fillRect(const int y, const int x, const int h, int w, const Pixel& value);
 
@@ -75,9 +86,9 @@ public:
     Layer& operator=(const Layer& layer);
 
 private:
+
     Array<Array<Pixel*>*> data_;
     size_t width_;
     size_t height_;
     int opacity_;
-    bool is_original_;
 };

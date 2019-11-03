@@ -222,6 +222,7 @@ public:
     void deep_copy(const Array<T, template_is_array>& array);
 
     void push_back(const T& value);
+    void push_front(const T& value);
     void pop_back();
 
     T& at(const size_t index);
@@ -315,12 +316,11 @@ Array<T, template_is_array>::Array(const Array<T, template_is_array>& array)
     }
     else
     {
-
-        for(size_t idx = 0; idx < size_; ++idx)
-        {
-            data_[idx] = array.data_[idx];
-        }
-        // internal::CopyHelper<T, template_is_array>::copy(array, this, 0, array.size());
+        // for(size_t idx = 0; idx < size_; ++idx)
+        // {
+        //     data_[idx] = array.data_[idx];
+        // }
+        internal::CopyHelper<T, template_is_array>::copy(array, this, 0, array.size());
     }
 }
 
@@ -467,6 +467,13 @@ void Array<T, template_is_array>::push_back(const T& value)
         reserve(capacity_ + _CONST_VECTOR_INCREMENT_);
     }
     data_[size_++] = value;
+}
+
+template<typename T, bool template_is_array>
+void Array<T, template_is_array>::push_front(const T& value)
+{
+    this->push_back(value);
+    this->move_to_bottom(size_ - 1);
 }
 
 template<typename T, bool template_is_array>

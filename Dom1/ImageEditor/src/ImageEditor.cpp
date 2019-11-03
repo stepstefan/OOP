@@ -4,7 +4,7 @@
 // Created by Stefan Stepanovic on 27/10/2019
 
 #include "include/ImageEditor.h"
-#include <cstring>
+#include <string>
 
 // Constructor, Destructor
 ImageEditor::ImageEditor()
@@ -19,9 +19,36 @@ ImageEditor::~ImageEditor()
 // Private methods
 void ImageEditor::findIntersection(int& x, int& y, int& w, int& h)
 {
-    
+    if (x < 0)
+    {
+        w -= x;
+        x = 0;
+    }
+    if (y < 0)
+    {
+        h -= y;
+        y = 0;
+    }
 }
 
+void ImageEditor::mergeLayers()
+{
+    final_ = Layer(height_, width_);
+    for(size_t i = 0; i < height_; ++i)
+    {
+        for(size_t j = 0; j < width_; ++j)
+        {
+            final_.at(i, j) = new Pixel();
+            for(const auto& layer : data_)
+            {
+                if(layer->at(i, j) != NULL)
+                {
+
+                }
+            }
+        }
+    }
+}
 
 
 // Public methods
@@ -71,9 +98,8 @@ bool ImageEditor::loadImage(unsigned char* image)
                 i++;
             }
         }
-        std::cout << name_ << " " << width_ << " " << height_ << i << std::endl;
+        std::cout << name_ << " " << width_ << " " << height_ << std::endl;
     }
-    
 }
 
 unsigned char* ImageEditor::saveImage()
@@ -142,12 +168,21 @@ void ImageEditor::addLayer()
 {
     Layer* l = new Layer(height_, width_);
     data_.push_back(l);
+    active_index_ = data_.size() - 1;
 }
 
 void ImageEditor::deleteLayer()
 {
-    data_.back()->freememory();
-    data_.pop_back();
+    if (active_index_ == 0)
+    {
+        std::cout << "Cannot delete original layer. Image unchanged!" << std::endl;
+    }
+    else
+    {
+        data_.move_to_top(active_index_);
+        data_.back()->freememory();
+        data_.pop_back();
+    }
 }
 
 void ImageEditor::selectLayer(int i)
@@ -158,14 +193,14 @@ void ImageEditor::selectLayer(int i)
     }
     else
     {
-        data_.move_to_top(i);
+        active_index_ = size_t(i);
     }
     
 }
 
 void ImageEditor::setLayerOpacity(int opacity)
 {
-    data_.back()->setOpacity(opacity);
+    data_.at(active_index_)->setOpacity(opacity);
 }
 
 void ImageEditor::invertColors()
@@ -185,7 +220,12 @@ void ImageEditor::toGrayScale()
 }
 
 void ImageEditor::blur(int size)
-{}
+{
+    for(auto& layer : data_)
+    {
+        layer->blur(size_t(size));
+    }
+}
 
 void ImageEditor::flipHorizontal()
 {
@@ -205,32 +245,57 @@ void ImageEditor::flipVertical()
 
 void ImageEditor::crop(int x, int y, int w, int h)
 {
-    findIntersection(x, y, w, h);
+    // findIntersection(x, y, w, h);
+    size_t height_ = h;
+    size_t width_ = w;
     for(auto& layer : data_)
     {
-        layer->crop(y, x, h, w);
+        tuple<size_t> new_shape = layer->crop(size_t(y), size_t(x), size_t(h), size_t(w));
+        if (height_ != new_shape.first)
+        {
+            std::cout << "Hight mismatch!" << std::endl;
+        }
+        if (width_ != new_shape.second)
+        {
+            std::cout << "Width mismatch" << std::endl;
+        }
     }
 }
 
 void ImageEditor::setActiveColor(std::string hex)
-{}
+{
+    if(hex[0] != '#')
+    {
+        std::cout << "Invalid hex format" << std::endl;
+    }
+    else
+    {
+        std::string tmp = hex.substr(1, 2);
+        uchar rval = uchar(std::stoi(tmp, nullptr, 16));
+        tmp = hex.substr(3, 2);
+        uchar gval = uchar(std::stoi(tmp, nullptr, 16));
+        tmp = hex.substr(5, 2);
+        uchar bval = uchar(std::stoi(tmp, nullptr, 16));
+
+        active_pixel_value.set(rval, gval, bval);
+    }
+}
 
 void ImageEditor::fillRect(int x, int y, int w, int h)
 {
     findIntersection(x, y, w, h);
-    data_.back()->fillRect(y, x, h, w, active_pixel_value);
+    data_.at(active_index_)->fillRect(y, x, h, w, active_pixel_value);
 }
 
 void ImageEditor::eraseRect(int x, int y, int w, int h)
 {
     findIntersection(x, y, w, h);
-    if (data_.back()->isOriginal())
+    if (active_index_ == 0)
     {
         std::cout << "Cannot erase on original layer! Image unchanged" << std::endl;
     }
     else
     {
-        data_.back()->eraseRect(y, x, h, w);
+        data_.at(active_index_)->eraseRect(y, x, h, w);
     }
 }
-

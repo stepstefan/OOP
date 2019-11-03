@@ -6,75 +6,43 @@
 #include "include/dynamic_array.h"
 #include <typeinfo>
 #include <vector>
+#include <string>
 
 typedef struct helper
 {
     int a;
-    helper()
-    {
-        a = 0;
-        std::cout << "Creating helper!" << std::endl << std::flush;
-    }
-    ~helper()
-    {
-        std::cout << "Delting helper!" << std::endl << std::flush;
-    }
 } Helper;
 
 
 int main()
 {
-    Array<int*> a(10);
-
-    int cnt = 0;
-    for(int i = 0; i < 10; i++)
+    Array<Helper*> a;
+    a.resize(10);
+    for(size_t i = 0; i < a.size(); i++)
     {
-        int* x = new int;
-        *x = cnt++;
-        a.at(i) = x;
-    } 
-
-    std::cout << "A:" << std::endl;
-    for(int i = 0; i < a.size(); ++i)
-    {
-        std::cout << a.at(i) << " ";
+        a.at(i) = new Helper();
     }
-    std::cout << std::endl << std::endl;
+    std::string hex("AA1033");
+    std::string rstr = hex.substr(0, 2);
+    std::cout << rstr << " " << std::stoi(rstr, nullptr, 16) << std::endl;
 
-    Array<int*> b(a);
-
-    std::cout << "A: ";
-    for(int i = 0; i < a.size(); ++i)
+    int tmp = 2;
+    for(size_t j = 0; j < tmp; ++j)
     {
-        std::cout << a.at(i) << " ";
+        a.push_back(NULL);
+        a.push_front(NULL);
     }
-    std::cout << std::endl;
-    std::cout << "B: ";
-    for(int i = 0; i < b.size(); ++i)
+    for(size_t i = 0; i < a.size(); ++i)
     {
-        std::cout << b.at(i) << " ";
+        if(a.at(i) == NULL)
+        {
+            std::cout << "N" << std::endl;
+        }
+        else
+        {
+            std::cout << a.at(i)->a << std::endl;
+        }
+        
     }
-    std::cout << std::endl << std::endl;
-
-    *a[5] = 100;
-    a.~Array();
-    
-    std::cout << "A: ";
-    for(int i = 0; i < a.size(); ++i)
-    {
-        std::cout << a.at(i) << " ";
-    }
-    std::cout << std::endl;
-    std::cout << "B: ";
-    for(int i = 0; i < b.size(); ++i)
-    {
-        std::cout << b.at(i) << " ";
-    }
-    std::cout << std::endl << std::endl;
-
-    Array<int> k(10);
-    k.crop(0,5);
-    
-    //Helper* h = new Helper();
     return 0;
 }
