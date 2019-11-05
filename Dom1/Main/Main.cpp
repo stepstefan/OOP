@@ -114,7 +114,7 @@ int main() {
 
 	// Ova for petlja ce da pokrene sve testove [0 - 12]. Modifikujte uslov za 'if' da biste pokretali samo odredjene testove (npr: if(testNumber == 1 || testNumber == 5)).
 	for(testNumber = 0; testNumber <= numberOfTests; testNumber++)
-		if(testNumber == 8) test();
+		if(testNumber == 12) test();
 
 	return 0;
 }

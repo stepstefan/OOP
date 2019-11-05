@@ -76,11 +76,10 @@ private:
 
     void findIntersection(int& x, int& y, int& w, int& h);
 
-    void mergeLayers();
+    Layer* mergeLayers();
 
     // Store layers in array
     Array<Layer*> data_;
-    Layer final_;
     size_t height_;
     size_t width_;
     Pixel active_pixel_value;

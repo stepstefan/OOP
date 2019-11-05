@@ -124,6 +124,11 @@ size_t Layer::width()
     return width_;
 }
 
+double Layer::opacity()
+{
+    return double(opacity_ / 100.0);
+}
+
 Pixel*& Layer::at(const size_t height, const size_t width)
 {
     if (height > height_ || width > width_)
@@ -302,6 +307,7 @@ tuple<size_t> Layer::crop(const int y, const int x, const int h, const int w)
     }
     tuple<size_t> shape;
     shape.set(height_, width_);
+    return shape;
 }
 
 void Layer::fillRect(const int y, const int x, const int h, const int w, const Pixel& value)

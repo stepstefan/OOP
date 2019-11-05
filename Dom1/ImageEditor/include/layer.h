@@ -58,6 +58,8 @@ public:
     size_t height();
     size_t width();
 
+    double opacity();
+
     Pixel*& at(const size_t height, const size_t width);
 
     void reserve(const size_t capacity);

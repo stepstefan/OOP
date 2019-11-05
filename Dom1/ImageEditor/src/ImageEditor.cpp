@@ -8,7 +8,7 @@
 
 // Constructor, Destructor
 ImageEditor::ImageEditor()
-    : active_pixel_value(), data_()
+    : active_pixel_value(0, 0, 0), data_()
 {}
 
 ImageEditor::~ImageEditor()
@@ -31,23 +31,35 @@ void ImageEditor::findIntersection(int& x, int& y, int& w, int& h)
     }
 }
 
-void ImageEditor::mergeLayers()
+Layer* ImageEditor::mergeLayers()
 {
-    final_ = Layer(height_, width_);
+    Layer* final = new Layer(height_, width_);
     for(size_t i = 0; i < height_; ++i)
     {
         for(size_t j = 0; j < width_; ++j)
         {
-            final_.at(i, j) = new Pixel();
-            for(const auto& layer : data_)
-            {
-                if(layer->at(i, j) != NULL)
-                {
+            double red = 0;
+            double green = 0;
+            double blue = 0;
 
+            double percent = 1.0;
+            
+            for(int layer = data_.size()-1; layer >= 0; --layer)
+            {
+                if(data_.at(layer)->at(i, j) != NULL)
+                {
+                    red += (double(percent) * double(data_.at(layer)->opacity()) * double(data_.at(layer)->at(i, j)->r));
+                    green += (double(percent) * double(data_.at(layer)->opacity()) * double(double(data_.at(layer)->at(i, j)->g)));
+                    blue += (double(percent) * double(data_.at(layer)->opacity()) * double(data_.at(layer)->at(i, j)->b));
+
+                    percent *= (1.0 - data_.at(layer)->opacity());
                 }
             }
+            final->at(i, j) = new Pixel(uchar(red), uchar(green), uchar(blue));
         }
     }
+    std::cout << "Created final" << std::endl;
+    return final;
 }
 
 
@@ -83,7 +95,7 @@ bool ImageEditor::loadImage(unsigned char* image)
             height_ += int(image[i + j] * pow(16, j));
         }
         i += 4;
-        this->data_.push_back(new Layer(height_, width_, true));
+        this->data_.push_back(new Layer(height_, width_));
         for(int h = height_ - 1; h >= 0; --h)
         {
             for(int w = 0; w < width_; ++w)
@@ -104,13 +116,15 @@ bool ImageEditor::loadImage(unsigned char* image)
 
 unsigned char* ImageEditor::saveImage()
 {
-    Layer* final = data_.at(0);
+    // Layer* final = data_.at(0);
+    Layer* final = mergeLayers();
     int output_length = 4 + name_.length();
     output_length += (4 - (output_length % 4)); // fill to number divisible by 4
     output_length += 8;
     int len_of_row = 3 * width_;
     len_of_row += (4 - (len_of_row % 4)) % 4; // fill to number divisible by 4
     output_length += height_ * len_of_row;
+    std::cout << "New image size: " << this->height_ << " " << this->width_ << std::endl;
     std::cout << "Output string len = " << output_length << std::endl;
 
     // unsigned char* output = new unsigned char[output_length];
@@ -246,8 +260,8 @@ void ImageEditor::flipVertical()
 void ImageEditor::crop(int x, int y, int w, int h)
 {
     // findIntersection(x, y, w, h);
-    size_t height_ = h;
-    size_t width_ = w;
+    height_ = h;
+    width_ = w;
     for(auto& layer : data_)
     {
         tuple<size_t> new_shape = layer->crop(size_t(y), size_t(x), size_t(h), size_t(w));
@@ -283,7 +297,7 @@ void ImageEditor::setActiveColor(std::string hex)
 
 void ImageEditor::fillRect(int x, int y, int w, int h)
 {
-    findIntersection(x, y, w, h);
+    // findIntersection(x, y, w, h);
     data_.at(active_index_)->fillRect(y, x, h, w, active_pixel_value);
 }
 
