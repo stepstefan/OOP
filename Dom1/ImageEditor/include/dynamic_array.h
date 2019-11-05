@@ -57,15 +57,7 @@ namespace internal
     {
         static void freememory(Array<T, template_is_array>* that, size_t index)
         {
-            // If it is non-pointer type (e.g. class)
-            // if (!that->empty())
-            // {
-            //     for(size_t i = index; i < that->size(); ++i)
-            //     {
-            //         // std::cout << "Destructor" << i << std::endl << std::flush;
-            //         that->at(i).~T();   
-            //     }
-            // }
+            // It will automatically free memory upon destruction
         }
     };
 
@@ -81,7 +73,6 @@ namespace internal
                 {
                     if (template_is_array)
                     {
-                        // std::cout << "Del[]" << std::endl << std::flush;
                         if (that->at(i) != NULL)
                         {
                             delete[] that->at(i);
@@ -92,13 +83,11 @@ namespace internal
                     {
                         if (that->at(i) != NULL)
                         {
-                            // std::cout << "Del" << "\t" << std::flush;
                             delete that->at(i);
                             that->at(i) = NULL;
                         }
                     }
                 }
-                //std::cout << std::endl;
             }
         }
     };
@@ -127,7 +116,6 @@ namespace internal
             if (!from.empty())
             {
                 to->resize(from.size());
-                //to->reserve(from.capacity());
                 for(size_t i = 0; i < from.size(); ++i)
                 {
                     to->at(i) = from.at(i);
@@ -145,7 +133,6 @@ namespace internal
             if (!from.empty())
             {
                 to->resize(from.capacity());
-                //to->reserve(from.capacity());
                 for(size_t i = 0; i < from.size(); ++i)
                 {
                     if(from.at(i) != NULL)
@@ -171,7 +158,6 @@ namespace internal
             if (!from.empty())
             {
                 to->resize(from.capacity());
-                //to->reserve(from.capacity());
                 for(size_t i = 0; i < from.size(); ++i)
                 {
                     to->at(i).deep_copy(from.at(i));
@@ -223,6 +209,7 @@ public:
 
     void push_back(const T& value);
     void push_front(const T& value);
+    void push_to_position(size_t position, const T& value);
     void pop_back();
 
     T& at(const size_t index);
@@ -347,7 +334,6 @@ Array<T, template_is_array>::~Array()
     }
     size_ = 0;
     capacity_ = 0;
-    // std::cout << "Array destructed" << std::endl << std::flush;
 }
 
 
@@ -477,6 +463,21 @@ void Array<T, template_is_array>::push_front(const T& value)
 }
 
 template<typename T, bool template_is_array>
+void Array<T, template_is_array>::push_to_position(size_t position, const T& value)
+{
+    if(size_ >= capacity_)
+    {
+        reserve(capacity_ + _CONST_VECTOR_INCREMENT_);
+    }
+    for(size_t idx = size_ - 1; idx > position; --idx)
+    {
+        data_[idx + 1] = data_[idx];
+    }
+    data_[position+1] = value;
+    size_++;
+}
+
+template<typename T, bool template_is_array>
 void Array<T, template_is_array>::pop_back()
 {
     if (size_ > 0)
@@ -562,7 +563,7 @@ size_t Array<T, template_is_array>::crop(const size_t start_idx, const size_t en
     }
     else
     {
-        // // Move all data from start_idx -> end_idx to beginning of array and resize it
+        // Move all data from start_idx -> end_idx to beginning of array and resize it
         size_t new_size = end_idx - start_idx;
         
         for(size_t i = 0; i < new_size; ++i)

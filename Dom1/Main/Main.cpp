@@ -26,7 +26,17 @@ unsigned char* editImage(unsigned char* input) {
 			Mesto za proizvoljno testiranje koda.
 			Vrsi editovanje slike MyExample.bmp i stvara izlazni fajl MyExample_RESULT.bmp
 		*/
-		break;
+		// imageEditor->loadImage(input);
+		// imageEditor->addLayer();
+		// imageEditor->fillRect(0,0,32,32);
+		// // imageEditor->addLayer();
+		// imageEditor->setActiveColor("#FF00FF");
+		// imageEditor->fillRect(12, 12, 64, 64);
+		// // imageEditor->setLayerOpacity(50);
+		// imageEditor->blur(3);
+		// output = imageEditor->saveImage();
+		// break;
+		// break;
 	case 1:
 		// LOAD/SAVE
 		imageEditor->loadImage(input);
@@ -114,7 +124,7 @@ int main() {
 
 	// Ova for petlja ce da pokrene sve testove [0 - 12]. Modifikujte uslov za 'if' da biste pokretali samo odredjene testove (npr: if(testNumber == 1 || testNumber == 5)).
 	for(testNumber = 0; testNumber <= numberOfTests; testNumber++)
-		if(testNumber == 12) test();
+		if(testNumber == testNumber) test();
 
 	return 0;
 }

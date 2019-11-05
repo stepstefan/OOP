@@ -29,6 +29,24 @@ void ImageEditor::findIntersection(int& x, int& y, int& w, int& h)
         h -= y;
         y = 0;
     }
+
+    if (x+w > width_)
+    {
+        w = width_ - x;
+    }
+    if (y+h > height_)
+    {
+        h = width_ - y;
+    }
+    
+    if (x > width_)
+    {
+        x = w = 0;
+    }
+    if (y > height_)
+    {
+        y = h = 0;
+    }
 }
 
 Layer* ImageEditor::mergeLayers()
@@ -66,13 +84,13 @@ Layer* ImageEditor::mergeLayers()
 // Public methods
 bool ImageEditor::loadImage(unsigned char* image)
 {
-    image_ = image;
     if(image[0] != 'B' || image[1] != 'M' || image[2] != '=')
     {
         std::cout << "Invalid start format" << std::endl;
     }
     else
     {
+        // get name and format
         int i = 3;
         name_ = "";
         while(image[i] != '=')
@@ -84,6 +102,8 @@ bool ImageEditor::loadImage(unsigned char* image)
         {
             i++;
         }
+
+        // get width and height
         width_ = height_ = 0;
         for(int j = 0; j < 4; j++)
         {
@@ -95,6 +115,8 @@ bool ImageEditor::loadImage(unsigned char* image)
             height_ += int(image[i + j] * pow(16, j));
         }
         i += 4;
+        
+        // get data
         this->data_.push_back(new Layer(height_, width_));
         for(int h = height_ - 1; h >= 0; --h)
         {
@@ -111,12 +133,12 @@ bool ImageEditor::loadImage(unsigned char* image)
             }
         }
         std::cout << name_ << " " << width_ << " " << height_ << std::endl;
+        active_index_ = 0;
     }
 }
 
 unsigned char* ImageEditor::saveImage()
 {
-    // Layer* final = data_.at(0);
     Layer* final = mergeLayers();
     int output_length = 4 + name_.length();
     output_length += (4 - (output_length % 4)); // fill to number divisible by 4
@@ -167,13 +189,6 @@ unsigned char* ImageEditor::saveImage()
             i++;
         }
     }
-    for(int c = 0; c < 20; ++c)
-    {
-        if(output[c] != image_[c])
-        {
-            std::cout << c << "|" << output[c] << "|" << image_[c] << std::endl;
-        }
-    }
 
     return output;
 }
@@ -181,8 +196,7 @@ unsigned char* ImageEditor::saveImage()
 void ImageEditor::addLayer()
 {
     Layer* l = new Layer(height_, width_);
-    data_.push_back(l);
-    active_index_ = data_.size() - 1;
+    data_.push_to_position(active_index_++, l);
 }
 
 void ImageEditor::deleteLayer()
@@ -235,10 +249,7 @@ void ImageEditor::toGrayScale()
 
 void ImageEditor::blur(int size)
 {
-    for(auto& layer : data_)
-    {
-        layer->blur(size_t(size));
-    }
+    data_.at(active_index_)->blur(size_t(size));
 }
 
 void ImageEditor::flipHorizontal()
@@ -259,7 +270,7 @@ void ImageEditor::flipVertical()
 
 void ImageEditor::crop(int x, int y, int w, int h)
 {
-    // findIntersection(x, y, w, h);
+    findIntersection(x, y, w, h);
     height_ = h;
     width_ = w;
     for(auto& layer : data_)
@@ -297,7 +308,7 @@ void ImageEditor::setActiveColor(std::string hex)
 
 void ImageEditor::fillRect(int x, int y, int w, int h)
 {
-    // findIntersection(x, y, w, h);
+    findIntersection(x, y, w, h);
     data_.at(active_index_)->fillRect(y, x, h, w, active_pixel_value);
 }
 

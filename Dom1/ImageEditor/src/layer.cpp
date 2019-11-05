@@ -1,25 +1,21 @@
 // 
 // layer.cpp
 //
-// Created by Stefan Stepanovic on 6/10/2019
+// Created by Stefan Stepanovic on 26/10/2019
 
 #include "include/layer.h"
 
 Pixel::pixel()
     : r(0), g(0), b(0)
-{
-    //
-}
+{}
 
 Pixel::pixel(const uchar r, const uchar g, const uchar b)
     : r(r), g(g), b(b)
-{
-    //
-}
+{}
 
 Pixel::~pixel()
 {
-    // Do nothing
+    // will automatically free
 }
 
 void Pixel::invert()
@@ -51,8 +47,7 @@ void Pixel::set(const uchar r, const uchar g, const uchar b)
 
 Layer::Layer()
     : width_(0), height_(0), opacity_(0), data_()
-{
-}
+{}
 
 Layer::Layer(const size_t width, const size_t height, const int opacity)
     : width_(width), height_(height), opacity_(opacity)
@@ -133,7 +128,7 @@ Pixel*& Layer::at(const size_t height, const size_t width)
 {
     if (height > height_ || width > width_)
     {
-        // std::cout << "Invalid indices" << std::endl;
+        std::cout << "Invalid indices on layer" << std::endl;
         exit;
     }
     else
@@ -219,6 +214,7 @@ Pixel applyKernel(const Array<Array<Pixel*>*>& data, double** kernel, size_t y, 
         {
             if(data.at(i+y)->at(j+x) != NULL)
             {
+                //std::cout << "Not null" << std::endl;
                 r += double(data.at(i+y)->at(j+x)->r) * kernel[i][j];
                 g += double(data.at(i+y)->at(j+x)->g) * kernel[i][j];
                 b += double(data.at(i+y)->at(j+x)->b) * kernel[i][j];
@@ -249,12 +245,38 @@ double** createMeanKernel(const Array<Array<Pixel*>*>& data, size_t y, size_t x,
     for(size_t i = 0; i < h; ++i)
     {
         out[i] = new double[w];
-        for(size_t j = 0; j < w; ++j)
+        if (cnt != 0)
         {
-            out[i][j] = 1.0/cnt;
+            for(size_t j = 0; j < w; ++j)
+            {
+                out[i][j] = 1.0/cnt;
+            }
         }
+        else
+        {
+            for(size_t j = 0; j < w; ++j)
+            {
+                out[i][j] = -1.0;
+            }            
+        }
+        
     }
     return out;
+}
+
+bool validKernel(double** kernel, size_t h, size_t w)
+{
+     for(size_t i = 0; i < h; ++i)
+    {
+        for(size_t j = 0; j < h; ++j)
+        {
+            if(kernel[i][j] != -1)
+            {
+                return true;
+            }
+        }
+    }
+    return false;
 }
 
 void Layer::blur(const size_t kernel_size)
@@ -264,15 +286,24 @@ void Layer::blur(const size_t kernel_size)
 
     Array<Array<Pixel*>*> copy_data(height_);
     copy_data.deep_copy(data_);
-    std::cout << copy_data.size() << std::endl;
     addPadding(copy_data, padding_y, padding_x);
     for(size_t i = 0; i < height_; ++i)
     {
         for(size_t j = 0; j < width_; ++j)
         {
             double** kernel = createMeanKernel(copy_data, i, j, kernel_size*2+1, kernel_size*2+1);
-            Pixel new_value = applyKernel(copy_data, kernel, i, j, kernel_size*2+1, kernel_size*2+1);
-            data_.at(i)->at(j)->set(new_value);
+            if (validKernel(kernel, kernel_size*2+1, kernel_size*2+1))
+            {
+                Pixel new_value = applyKernel(copy_data, kernel, i, j, kernel_size*2+1, kernel_size*2+1);
+                if(data_.at(i)->at(j) != NULL)
+                {
+                    data_.at(i)->at(j)->set(new_value);
+                }
+                else
+                {
+                    data_.at(i)->at(j) = new Pixel(new_value);
+                }
+            }
         }   
     }
 }

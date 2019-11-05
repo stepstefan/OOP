@@ -16,33 +16,21 @@ typedef struct helper
 
 int main()
 {
-    Array<Helper*> a;
+    Array<int> a;
     a.resize(10);
-    for(size_t i = 0; i < a.size(); i++)
+    for(int i = 0; i < 10; ++i)
     {
-        a.at(i) = new Helper();
+        a[i] = i;
     }
-    std::string hex("AA1033");
-    std::string rstr = hex.substr(0, 2);
-    std::cout << rstr << " " << std::stoi(rstr, nullptr, 16) << std::endl;
-
-    int tmp = 2;
-    for(size_t j = 0; j < tmp; ++j)
+    for(int i = 0; i < a.size(); ++i)
     {
-        a.push_back(NULL);
-        a.push_front(NULL);
+        std::cout << a.at(i) << " " << std::endl;
     }
-    for(size_t i = 0; i < a.size(); ++i)
+    std::cout << std::endl << std::endl;
+    a.push_to_position(0, 100);
+    for(int i = 0; i < a.size(); ++i)
     {
-        if(a.at(i) == NULL)
-        {
-            std::cout << "N" << std::endl;
-        }
-        else
-        {
-            std::cout << a.at(i)->a << std::endl;
-        }
-        
+        std::cout << a.at(i) << " " << std::endl;
     }
     return 0;
 }

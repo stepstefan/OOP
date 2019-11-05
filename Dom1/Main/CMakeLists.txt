@@ -11,5 +11,5 @@ add_executable(Domaci1 Main.cpp)
 
 # target_link_libraries(Domaci1 ${CMAKE_CURRENT_SOURCE_DIR}/../ImageEditor/Release/lib/libdynamic_array.so)
 # target_link_libraries(Domaci1 ${CMAKE_CURRENT_SOURCE_DIR}/../ImageEditor/Release/lib/liblayer.so)
-target_link_libraries(Domaci1 ${CMAKE_CURRENT_SOURCE_DIR}/../ImageEditor/Release/lib/libImageEditor.so)
+target_link_libraries(Domaci1 ${CMAKE_CURRENT_SOURCE_DIR}/../ImageEditor/Debug/lib/libImageEditor.so)
 target_link_libraries(Domaci1 ${CMAKE_CURRENT_SOURCE_DIR}/test.o)

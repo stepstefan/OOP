@@ -85,5 +85,4 @@ private:
     Pixel active_pixel_value;
     std::string name_;
     size_t active_index_;
-    unsigned char* image_;
 };
