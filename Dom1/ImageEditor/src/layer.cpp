@@ -49,7 +49,7 @@ Layer::Layer()
     : width_(0), height_(0), opacity_(0), data_()
 {}
 
-Layer::Layer(const size_t width, const size_t height, const int opacity)
+Layer::Layer(const size_t height, const size_t width, const int opacity)
     : width_(width), height_(height), opacity_(opacity)
 {
     data_.reserve(height_);

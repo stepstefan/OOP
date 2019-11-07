@@ -107,16 +107,17 @@ bool ImageEditor::loadImage(unsigned char* image)
         width_ = height_ = 0;
         for(int j = 0; j < 4; j++)
         {
-            width_ += int(image[i + j] * pow(16, j));
+            width_ += int(image[i + j] * pow(256, j));
         }
         i += 4;
         for(int j = 0; j < 4; j++)
         {
-            height_ += int(image[i + j] * pow(16, j));
+            height_ += int(image[i + j] * pow(256, j));
         }
         i += 4;
         
         // get data
+        std::cout << height_ << " " << width_ << std::endl;
         this->data_.push_back(new Layer(height_, width_));
         for(int h = height_ - 1; h >= 0; --h)
         {
@@ -132,6 +133,7 @@ bool ImageEditor::loadImage(unsigned char* image)
                 i++;
             }
         }
+
         std::cout << name_ << " " << width_ << " " << height_ << std::endl;
         active_index_ = 0;
     }
