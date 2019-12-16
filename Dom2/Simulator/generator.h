@@ -9,6 +9,28 @@
 
 #include "./element.h"
 
+typedef enum GeneratorType
+{
+   BASE_GENERATOR_TYPE = 0,
+   CLOCK_TYPE,
+   MANUAL_GENERATOR_TYPE
+} GeneratorType;
+
+// Parent class for all generator types (abstract)
+class Generator : public Element
+{
+ public:
+    explicit Generator(int element_id, GeneratorType type);
+    void SetPort(Element* element, int port);
+    std::vector<double> GetChangeTimestamps(double duration);
+
+ protected:
+    const GeneratorType gen_type_;
+
+ private:
+    virtual std::vector<double> SampleTimestamps(double duration);
+};
+
 // Constant output generator
 class BaseGenerator : public Generator
 {
@@ -19,6 +41,7 @@ class BaseGenerator : public Generator
     void Run(double time_stamp);
 
  private:
+    virtual std::vector<double> SampleTimestamps(double duration);
     bool value_;
 };
 
@@ -32,6 +55,7 @@ class Clock : public Generator
     void Run(int time_stamp) {}
 
  private:
+    virtual std::vector<double> SampleTimestamps(double duration);
     const double frequency_;
 };
 
@@ -41,5 +65,6 @@ class SignalGenerator : public Generator
     explicit SignalGenerator(int element_id);
 
  private:
+    virtual std::vector<double> SampleTimestamps(double duration);
     void Run(int time_stamp) {}
 };

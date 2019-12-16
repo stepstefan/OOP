@@ -58,10 +58,7 @@ void Element::SetPort(Element* element, int port)
     }
 }
 
-// Logical circuit abstract class
-LogicalCircuit::LogicalCircuit(int element_id, int input_size, ElementType type)
-    : Element(element_id, input_size, type)
-{}
+
 
 // Probe class
 Probe::Probe(int element_id)
@@ -71,14 +68,4 @@ Probe::Probe(int element_id)
 void Probe::Run(double time_stamp)
 {
     output_ = input_.at(0)->GetOutput();
-}
-
-// Generator abstract class
-Generator::Generator(int element_id, ElementType type)
-    : Element(element_id, 0, type)
-{}
-
-void Generator::SetPort(Element* element, int port)
-{
-    std::cout << "Cannot set input port of generator!" << std::endl;
 }

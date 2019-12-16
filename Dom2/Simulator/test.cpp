@@ -13,7 +13,7 @@ int main()
 {
     Circuit circuit(4);
     BaseGenerator* gen1 = new BaseGenerator(1, 0);
-    BaseGenerator* gen2 = new BaseGenerator(2, 0);
+    BaseGenerator* gen2 = new BaseGenerator(2, 1);
     OrElement* note = new OrElement(3, 2);
     Probe* probe = new Probe(4);
     circuit.AddElement(note);

@@ -11,12 +11,8 @@
 
 typedef enum ElementType
 {
-    BASE_GENERATOR_TYPE = 0,
-    CLOCK_TYPE = 1,
-    SIGNAL_GENERATOR_TYPE,
-    NOT_ELEMENT_TYPE,
-    AND_ELEMENT_TYPE,
-    OR_ELEMENT_TYPE,
+    GENERATOR_TYPE,
+    LOGICAL_CIRCUIT_TYPE,
     PROBE_TYPE
 } ElementType;
 
@@ -46,13 +42,6 @@ class Element
     virtual void Run(double time_stamp) = 0;
 };
 
-// Parent class for all logical circuit types (abstract)
-class LogicalCircuit : public Element
-{
- public:
-    explicit LogicalCircuit(int element_id, int input_size, ElementType type);
-};
-
 // Probe class
 class Probe : public Element
 {
@@ -62,13 +51,3 @@ class Probe : public Element
  private:
     virtual void Run(double time_stamp);
 };
-
-// Parent class for all generator types (abstract)
-class Generator : public Element
-{
- public:
-    explicit Generator(int element_id, ElementType type);
-    void SetPort(Element* element, int port);
-};
-
-

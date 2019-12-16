@@ -9,6 +9,22 @@
 
 #include "./element.h"
 
+typedef enum LogicalCircuitType
+{
+   NOT_ELEMENT_TYPE = 3,
+   AND_ELEMENT_TYPE,
+   OR_ELEMENT_TYPE
+} LogicalCircuitType;
+
+// Parent class for all logical circuit types (abstract)
+class LogicalCircuit : public Element
+{
+ public:
+    explicit LogicalCircuit(int element_id, int input_size, LogicalCircuitType type);
+
+ protected:
+    const LogicalCircuitType log_type_;
+};
 
 class AndElement : public LogicalCircuit
 {

@@ -5,9 +5,15 @@
 
 #include "./logical_circuit.h"
 
+
+// Logical circuit abstract class
+LogicalCircuit::LogicalCircuit(int element_id, int input_size, LogicalCircuitType type)
+    : Element(element_id, input_size, ElementType::LOGICAL_CIRCUIT_TYPE), log_type_(type)
+{}
+
 // AND ELEMENT
 AndElement::AndElement(int element_id, int input_size)
-    : LogicalCircuit(element_id, input_size, AND_ELEMENT_TYPE)
+    : LogicalCircuit(element_id, input_size, LogicalCircuitType::AND_ELEMENT_TYPE)
 {}
 
 void AndElement::Run(double time_stamp)
@@ -22,7 +28,7 @@ void AndElement::Run(double time_stamp)
 
 // OR ELEMENT
 OrElement::OrElement(int element_id, int input_size)
-    : LogicalCircuit(element_id, input_size, OR_ELEMENT_TYPE)
+    : LogicalCircuit(element_id, input_size, LogicalCircuitType::OR_ELEMENT_TYPE)
 {}
 
 void OrElement::Run(double time_stamp)
@@ -37,7 +43,7 @@ void OrElement::Run(double time_stamp)
 
 // NOT ELEMENT
 NotElement::NotElement(int element_id)
-    : LogicalCircuit(element_id, 1, NOT_ELEMENT_TYPE)
+    : LogicalCircuit(element_id, 1, LogicalCircuitType::NOT_ELEMENT_TYPE)
 {}
 
 void NotElement::Run(double time_stamp)
