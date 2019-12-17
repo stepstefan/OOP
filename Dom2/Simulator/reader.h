@@ -1,7 +1,7 @@
 // 
-// simulator.h
+// reader.h
 //
-// Created by Stefan Stepanovic on 12/15/2019
+// Created by Stefan Stepanovic on 12/16/2019
 
 #pragma once
 

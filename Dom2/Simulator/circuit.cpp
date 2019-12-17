@@ -20,6 +20,11 @@ std::vector<Element*> Circuit::GetGenerators()
     return generators_;
 }
 
+std::vector<Element*> Circuit::GetProbes()
+{
+    return probes_;
+}
+
 void Circuit::AddElement(Element* element)
 {
     if (elements_.size() < number_of_elements_)

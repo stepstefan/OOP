@@ -28,9 +28,9 @@ class Circuit
     // Evaluate circuit (find all probe values) in given timestamp
     std::vector<bool> Evaluate(double time_stamp);
 
-    // return list of generators
-    // for sampling of timestamps
+    // return list of generators and probes
     std::vector<Element*> GetGenerators();
+    std::vector<Element*> GetProbes();
 
  private:
     std::vector<Element*> elements_;

@@ -17,6 +17,8 @@
 #include "./generator.h"
 #include "./logical_circuit.h"
 #include "./circuit.h"
+#include "./reader.h"
+#include "./writer.h"
 
 class Simulator
 {

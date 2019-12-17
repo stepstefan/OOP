@@ -42,14 +42,14 @@ std::vector<double> Clock::SampleTimestamps(const double duration)
     while (time <= duration)
     {
         timestamps.push_back(time);
-        time += frequency_;
+        time += (1 / frequency_) / 2;
     }
     return timestamps;
 }
 
 void Clock::Run(const double timestamp)
 {
-    int mul = static_cast<int>(timestamp / frequency_);
+    int mul = static_cast<int>(timestamp / ( (1 / frequency_) / 2));
     if (mul % 2 == 0)
     {
         output_ = false;
