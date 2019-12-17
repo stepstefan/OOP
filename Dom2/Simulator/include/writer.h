@@ -13,15 +13,19 @@
 
 #include "./element.h"
 
+// singleton class for writing oututdataa
 class Writer
 {
  public:
     static Writer& GetInstance();
     ~Writer();
 
+    // Write data to file
     void WriteOutput(const std::vector<double>& timestamps,
                      const std::vector<std::vector<bool>>& values,
-                     const std::vector<Element*>& probes);
+                     const std::vector<Element*>& probes) const;
+
+    // set base form of output file path
     void SetPath(const std::string& path);
 
     // delete unwanted methods and constructors

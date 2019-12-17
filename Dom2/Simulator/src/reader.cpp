@@ -23,12 +23,12 @@ void Reader::SetPath(const std::string& path)
     path_ = path;
 }
 
-double Reader::GetDuration()
+const double Reader::GetDuration() const
 {
     return duration_;
 }
 
-int Reader::GetNumberOfElements()
+const int Reader::GetNumberOfElements() const
 {
     return number_of_elements_;
 }
@@ -40,13 +40,28 @@ Circuit* Reader::ReadCircuit()
     {
         input >> duration_;
         input >> number_of_elements_;
-        std::cout << duration_ << " " << number_of_elements_ << std::endl;
+
+        if (number_of_elements_ <= 0 || duration_ <= 0)
+        {
+            std::string error = "Invalid circuit params : duration = " +
+                                std::to_string(duration_) + " and number_od_elements = " +
+                                std::to_string(number_of_elements_);
+            #ifdef _MSC_VER
+                throw InvalidCircuitParamsException(error.c_str());
+            #endif
+            std::cout << error << std::endl;
+        }
+        else
+        {
+            std::cout << duration_ << " " << number_of_elements_ << std::endl;
+        }
 
         Circuit* circuit = new Circuit(number_of_elements_);
 
         std::string line;
         // finish reading first line
         std::getline(input, line);
+
         // read elements
         for (int i = 0; i < number_of_elements_; i++)
         {
@@ -60,6 +75,8 @@ Circuit* Reader::ReadCircuit()
             double frequency;
             double time;
             std::vector<double> rel_times(0);
+
+            // switch for constructor ef each element
             switch (type)
             {
                 case GeneratorType::CLOCK_TYPE:
@@ -105,5 +122,13 @@ Circuit* Reader::ReadCircuit()
         }
 
         return circuit;
+    }
+    else
+    {
+        std::string error = "Reader: Could not open file " + path_;
+        #ifdef _MSC_VER
+            throw FileOpenException(error.c_str());
+        #endif
+        std::cout << error << std::endl;
     }
 }

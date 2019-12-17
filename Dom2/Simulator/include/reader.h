@@ -14,6 +14,7 @@
 #include "./generator.h"
 #include "./logical_circuit.h"
 #include "./circuit.h"
+#include "./exception.h"
 
 class Reader
 {
@@ -21,8 +22,8 @@ class Reader
     static Reader& GetInstance();
     ~Reader();
 
-    double GetDuration();
-    int GetNumberOfElements();
+    const double GetDuration() const;
+    const int GetNumberOfElements() const;
     Circuit* ReadCircuit();
     void SetPath(const std::string& path);
 

@@ -9,11 +9,13 @@
 #include <vector>
 #include <iostream>
 
+#include "./exception.h"
+
 typedef enum ElementType
 {
     PROBE_TYPE = 0,
-    GENERATOR_TYPE,
-    LOGICAL_CIRCUIT_TYPE,
+    GENERATOR_TYPE = -1,
+    LOGICAL_CIRCUIT_TYPE = -2,
 } ElementType;
 
 // Parent element class (abstract)
@@ -22,10 +24,11 @@ class Element
  public:
     explicit Element(const int element_id, const int input_size, const ElementType type);
 
-    ElementType GetType();
-    int GetId();
-    bool GetOutput();
-    const std::vector<Element*> GetInput();
+    // Access object fields
+    ElementType GetType() const;
+    int GetId() const;
+    bool GetOutput() const;
+    const std::vector<Element*> GetInput() const;
 
     // Add connectio to port (excpetion if element is generator!)
     virtual void SetPort(Element* element, const int port);
@@ -34,7 +37,7 @@ class Element
     void SetOutput(const double timestamp);
 
     // return timestamps in which element chenges polarity (only for generators!)
-    std::vector<double> GetChangeTimestamps(const double duration);
+    std::vector<double> GetChangeTimestamps(const double duration) const;
 
     ~Element();
 
@@ -45,12 +48,14 @@ class Element
     const ElementType type_;
 
  private:
+    // private virtual function for sampling timestamps
+    // to enable redefinition in stacked inheritance
+
     // Run element (update it's output value based on data)
     virtual void Run(const double timestamp) = 0;
 
-    // private virtual function for sampling timestamps
-    // to enable redefinition in stacked inheritance
-    virtual std::vector<double> SampleTimestamps(const double duration);
+    // sample timestamps for Element::GetChangeTimestamps
+    virtual std::vector<double> SampleTimestamps(const double duration) const;
 };
 
 // Probe class

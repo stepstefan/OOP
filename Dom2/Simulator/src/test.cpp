@@ -58,7 +58,7 @@ int main()
 
     Simulator sim;
     // sim.circuit_ = &circuit;
-    sim.LoadCircuit("/home/stefanstepanovic/OOP/Dom2/Main/test_primeri/test_5.txt");
+    sim.LoadCircuit("/home/stepstefan/ETF/Druga/OOP/Dom2/Main/test_primeri/test_5.txt");
 
     sim.Simulate("test.txt");
 

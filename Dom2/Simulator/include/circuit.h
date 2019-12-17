@@ -16,25 +16,26 @@
 class Circuit
 {
  public:
-    explicit Circuit(int number_of_elements);
+    explicit Circuit(const int number_of_elements);
+    ~Circuit();
 
     // Add element to circuit
     void AddElement(Element* element);
 
     // Add connection to circuit.
     // Output element_id1 to input of element_id2 on port port
-    void AddConnection(int element_id1, int element_id2, int port);
+    void AddConnection(const int element_id1, const int element_id2, const int port);
 
     // Evaluate circuit (find all probe values) in given timestamp
-    std::vector<bool> Evaluate(double time_stamp);
+    std::vector<bool> Evaluate(const double time_stamp);
 
     // return list of generators and probes
-    std::vector<Element*> GetGenerators();
-    std::vector<Element*> GetProbes();
+    const std::vector<Element*> GetGenerators() const;
+    const std::vector<Element*> GetProbes() const;
 
  private:
     std::vector<Element*> elements_;
     std::vector<Element*> probes_;
     std::vector<Element*> generators_;
-    int number_of_elements_;
+    const int number_of_elements_;
 };

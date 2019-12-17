@@ -1,4 +1,4 @@
-// 
+//
 // circuit.cpp
 //
 // Created by Stefan Stepanovic on 12/15/2019
@@ -8,48 +8,63 @@
 #include "./generator.h"
 #include "./logical_circuit.h"
 
-Circuit::Circuit(int number_of_elements)
+Circuit::Circuit(const int number_of_elements)
     : number_of_elements_(number_of_elements)
 {
     // just reserve memory
     elements_.reserve(number_of_elements);
 }
 
-std::vector<Element*> Circuit::GetGenerators()
+Circuit::~Circuit()
+{
+    for (auto& elem : elements_)
+    {
+        free(elem);
+    }
+    // rest will self-destruct
+}
+
+const std::vector<Element*> Circuit::GetGenerators() const
 {
     return generators_;
 }
 
-std::vector<Element*> Circuit::GetProbes()
+const std::vector<Element*> Circuit::GetProbes() const
 {
     return probes_;
 }
 
 void Circuit::AddElement(Element* element)
 {
+    // check if all elements have been added
     if (elements_.size() < number_of_elements_)
     {
         elements_.push_back(element);
+        // add pointer to vector of probes
         if (element->GetType() == ElementType::PROBE_TYPE)
         {
             probes_.push_back(element);
         }
+        // add pointer to vector of generators
         if (element->GetType() == ElementType::GENERATOR_TYPE)
         {
             generators_.push_back(element);
-            std::cout << "Added gen " << element->GetId() << std::endl;
         }
     }
     else
     {
         std::cout << "All elements are already added!" << std::endl;
+        #ifdef _MSC_VER
+            throw AllElementsAddedException("All elements have been added to circuit");
+        #endif
     }
 }
 
-void Circuit::AddConnection(int element_id1, int element_id2, int port)
+void Circuit::AddConnection(const int element_id1, const int element_id2, const int port)
 {
     Element* element1 = nullptr;
     Element* element2 = nullptr;
+    // find elements by their id
     for (const auto& element : elements_)
     {
         if (element->GetId() == element_id1)
@@ -64,7 +79,11 @@ void Circuit::AddConnection(int element_id1, int element_id2, int port)
 
     if (element1 == nullptr || element2 == nullptr)
     {
-        std::cout << "Elements do not exist!" << std::endl;
+        std::string error = "Elements " + std::to_string(element_id1) + " and " + std::to_string(element_id2) + "do not exist!";
+        std::cout << error << std::endl;
+        #ifdef _MSC_VER
+            throw InvalidElementsException(error.c_str());
+        #endif
     }
     else
     {
@@ -72,7 +91,7 @@ void Circuit::AddConnection(int element_id1, int element_id2, int port)
     }
 }
 
-std::vector<bool> Circuit::Evaluate(double timestamp)
+std::vector<bool> Circuit::Evaluate(const double timestamp)
 {
     std::vector<bool> outputs;
 
@@ -92,8 +111,8 @@ std::vector<bool> Circuit::Evaluate(double timestamp)
             }
             to_add.pop();
         }
-        std::cout << std::endl;
 
+        // iterative evaluation of stack
         while (!stack.empty())
         {
             Element* elem = stack.top();
@@ -101,7 +120,6 @@ std::vector<bool> Circuit::Evaluate(double timestamp)
             stack.pop();
         }
         outputs.push_back(probe->GetOutput());
-        std::cout << timestamp << ": " << probe->GetOutput();
     }
     return outputs;
 }

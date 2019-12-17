@@ -8,37 +8,38 @@
 #include <vector>
 
 #include "./element.h"
+#include "./exception.h"
 
 typedef enum GeneratorType
 {
-   BASE_GENERATOR_TYPE = 0,
-   CLOCK_TYPE,
-   MANUAL_GENERATOR_TYPE
+    BASE_GENERATOR_TYPE = 0,
+    CLOCK_TYPE,
+    MANUAL_GENERATOR_TYPE
 } GeneratorType;
 
 // Parent class for all generator types (abstract)
 class Generator : public Element
 {
  public:
-    explicit Generator(int element_id, GeneratorType type);
+    explicit Generator(const int element_id, const GeneratorType type);
     void SetPort(Element* element, const int port);
 
  protected:
     const GeneratorType gen_type_;
 
  private:
-    virtual std::vector<double> SampleTimestamps(const double duration) = 0;
+    virtual std::vector<double> SampleTimestamps(const double duration) const = 0;
 };
 
 // Constant output generator
 class BaseGenerator : public Generator
 {
  public:
-    explicit BaseGenerator(int element_id, bool value);
+    explicit BaseGenerator(const int element_id, const bool value);
 
  private:
     void Run(const double time_stamp);
-    std::vector<double> SampleTimestamps(const double duration);
+    std::vector<double> SampleTimestamps(const double duration) const;
 
     bool value_;
 };
@@ -47,11 +48,11 @@ class BaseGenerator : public Generator
 class Clock : public Generator
 {
  public:
-    explicit Clock(int element_id, double frequency);
+    explicit Clock(const int element_id, const double frequency);
 
  private:
     void Run(const double timestamp);
-    std::vector<double> SampleTimestamps(const double duration);
+    std::vector<double> SampleTimestamps(const double duration) const;
 
     const double frequency_;
 };
@@ -62,8 +63,8 @@ class ManualGenerator : public Generator
     explicit ManualGenerator(const int element_id, const std::vector<double>& rel_times);
 
  private:
-    std::vector<double> SampleTimestamps(const double duration);
     void Run(const double timestamp);
+    std::vector<double> SampleTimestamps(const double duration) const;
 
     const std::vector<double> rel_times_;
 };

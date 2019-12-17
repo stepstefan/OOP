@@ -1,10 +1,10 @@
-// 
+//
 // simulator.cpp
 //
 // Created by Stefan Stepanovic on 12/16/2019
 
 #include "./simulator.h"
-#
+
 bool DoubleEqual(const double a, const double b)
 {
     if (std::abs(a-b) < EPSILON)
@@ -16,6 +16,16 @@ bool DoubleEqual(const double a, const double b)
 
 Simulator::Simulator()
 {}
+
+const Circuit* Simulator::GetCircuit() const
+{
+    return circuit_;
+}
+
+Simulator::~Simulator()
+{
+    free(circuit_);
+}
 
 void Simulator::LoadCircuit(const std::string& filepath)
 {
@@ -54,6 +64,7 @@ void Simulator::Simulate(const std::string& filepath)
 
     // run simulation
     std::vector<std::vector<bool>> outputs;
+    // std::cout << "Eval times : ";
     for (const double timestamp : timestamps)
     {
         outputs.push_back(circuit_->Evaluate(timestamp));

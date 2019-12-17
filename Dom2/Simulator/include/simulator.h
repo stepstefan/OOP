@@ -19,17 +19,25 @@
 #include "./circuit.h"
 #include "./reader.h"
 #include "./writer.h"
+#include "./exception.h"
 
 class Simulator
 {
  public:
     Simulator();
+    ~Simulator();
 
+    // Run simulation
     void Simulate(const std::string& filepath);
+
+    // Load Circuit to simulation
     void LoadCircuit(const std::string& filepath);
 
-    Circuit* circuit_;
+    // Circuit access
+    const Circuit* GetCircuit() const;
+
 
  private:
     double duration_;
+    Circuit* circuit_;
 };

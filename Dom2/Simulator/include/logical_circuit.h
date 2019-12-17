@@ -32,7 +32,7 @@ class AndElement : public LogicalCircuit
     explicit AndElement(int element_id, int input_size);
 
  private:
-    void Run(double time_stamp);
+    void Run(const double time_stamp);
 };
 
 class OrElement : public LogicalCircuit
@@ -41,7 +41,7 @@ class OrElement : public LogicalCircuit
     explicit OrElement(int element_id, int input_size);
 
  private:
-    void Run(double time_stamp);
+    void Run(const double time_stamp);
 };
 
 class NotElement : public LogicalCircuit
@@ -50,5 +50,5 @@ class NotElement : public LogicalCircuit
     explicit NotElement(int element_id);
 
  private:
-    void Run(double time_stamp);
+    void Run(const double time_stamp);
 };
