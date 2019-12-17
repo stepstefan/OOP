@@ -5,14 +5,29 @@
 
 #pragma once
 
-#include "element.h"
-#include "circuit.h"
+#define EPSILON 1e-10
+
+#include <string>
+#include <algorithm>
+#include <iostream>
+#include <fstream>
+#include <sstream>
+
+#include "./element.h"
+#include "./generator.h"
+#include "./logical_circuit.h"
+#include "./circuit.h"
 
 class Simulator
 {
  public:
-    explicit Simulator(int duration);
+    Simulator();
+
+    void Simulate(const std::string& filepath);
+    void LoadCircuit(const std::string& filepath);
+
+    Circuit* circuit_;
 
  private:
-    int duration_;
+    double duration_;
 };

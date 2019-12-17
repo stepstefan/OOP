@@ -15,14 +15,24 @@ Circuit::Circuit(int number_of_elements)
     elements_.reserve(number_of_elements);
 }
 
+std::vector<Element*> Circuit::GetGenerators()
+{
+    return generators_;
+}
+
 void Circuit::AddElement(Element* element)
 {
     if (elements_.size() < number_of_elements_)
     {
         elements_.push_back(element);
-        if (element->GetType() == PROBE_TYPE)
+        if (element->GetType() == ElementType::PROBE_TYPE)
         {
             probes_.push_back(element);
+        }
+        if (element->GetType() == ElementType::GENERATOR_TYPE)
+        {
+            generators_.push_back(element);
+            std::cout << "Added gen " << element->GetId() << std::endl;
         }
     }
     else
@@ -57,8 +67,11 @@ void Circuit::AddConnection(int element_id1, int element_id2, int port)
     }
 }
 
-void Circuit::Evaluate(double time_stamp)
+std::vector<bool> Circuit::Evaluate(double timestamp)
 {
+    std::vector<bool> outputs;
+
+    // Evaluate for all probes
     for (auto& probe : probes_)
     {
         // Create operator stack for specific probe
@@ -68,7 +81,6 @@ void Circuit::Evaluate(double time_stamp)
         while (!to_add.empty())
         {
             stack.push(to_add.front());
-            std::cout << to_add.front()->GetId();
             for (int i = 0; i < to_add.front()->GetInput().size(); i++)
             {
                 to_add.push(to_add.front()->GetInput().at(i));
@@ -79,12 +91,12 @@ void Circuit::Evaluate(double time_stamp)
 
         while (!stack.empty())
         {
-            std::cout << "Setting " << stack.top()->GetId();
             Element* elem = stack.top();
-            elem->SetOutput(time_stamp);
-            std::cout << " to " << stack.top()->GetOutput() << std::endl;
+            elem->SetOutput(timestamp);
             stack.pop();
         }
-        std::cout << "Probe" << probe->GetOutput() << std::endl;
+        outputs.push_back(probe->GetOutput());
+        std::cout << timestamp << ": " << probe->GetOutput();
     }
+    return outputs;
 }

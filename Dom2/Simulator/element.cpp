@@ -6,7 +6,7 @@
 #include "./element.h"
 
 // Element abstract class
-Element::Element(int element_id, int input_size, ElementType type)
+Element::Element(const int element_id, const int input_size, const ElementType type)
     : element_id_(element_id), input_(input_size), type_(type)
 {}
 
@@ -28,9 +28,9 @@ bool Element::GetOutput()
     return output_;
 }
 
-void Element::SetOutput(double time_stamp)
+void Element::SetOutput(const double timestamp)
 {
-    this->Run(time_stamp);
+    this->Run(timestamp);
 }
 
 const std::vector<Element*> Element::GetInput()
@@ -58,14 +58,27 @@ void Element::SetPort(Element* element, int port)
     }
 }
 
+std::vector<double> Element::SampleTimestamps(const double duration)
+{
+    if (type_ != ElementType::GENERATOR_TYPE)
+    {
+        std::cout << "Not generator" << std::endl;
+        // TODO(stefan): Exception
+    }
+    return std::vector<double>();
+}
 
+std::vector<double> Element::GetChangeTimestamps(const double duration)
+{
+    return this->SampleTimestamps(duration);
+}
 
 // Probe class
-Probe::Probe(int element_id)
+Probe::Probe(const int element_id)
     : Element(element_id, 1, PROBE_TYPE)
 {}
 
-void Probe::Run(double time_stamp)
+void Probe::Run(const double time_stamp)
 {
     output_ = input_.at(0)->GetOutput();
 }

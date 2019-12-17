@@ -24,7 +24,7 @@ class LogicalCircuit : public Element
 
  protected:
     const LogicalCircuitType log_type_;
-};
+ };
 
 class AndElement : public LogicalCircuit
 {

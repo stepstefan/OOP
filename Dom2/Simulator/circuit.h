@@ -18,11 +18,23 @@ class Circuit
  public:
     explicit Circuit(int number_of_elements);
 
+    // Add element to circuit
     void AddElement(Element* element);
-    void AddConnection(int element_id1, int element_id2, int port);
-    void Evaluate(double time_stamp);
 
+    // Add connection to circuit.
+    // Output element_id1 to input of element_id2 on port port
+    void AddConnection(int element_id1, int element_id2, int port);
+
+    // Evaluate circuit (find all probe values) in given timestamp
+    std::vector<bool> Evaluate(double time_stamp);
+
+    // return list of generators
+    // for sampling of timestamps
+    std::vector<Element*> GetGenerators();
+
+ private:
     std::vector<Element*> elements_;
     std::vector<Element*> probes_;
+    std::vector<Element*> generators_;
     int number_of_elements_;
 };

@@ -21,14 +21,13 @@ class Generator : public Element
 {
  public:
     explicit Generator(int element_id, GeneratorType type);
-    void SetPort(Element* element, int port);
-    std::vector<double> GetChangeTimestamps(double duration);
+    void SetPort(Element* element, const int port);
 
  protected:
     const GeneratorType gen_type_;
 
  private:
-    virtual std::vector<double> SampleTimestamps(double duration);
+    virtual std::vector<double> SampleTimestamps(const double duration) = 0;
 };
 
 // Constant output generator
@@ -38,10 +37,9 @@ class BaseGenerator : public Generator
     explicit BaseGenerator(int element_id, bool value);
 
  private:
-    void Run(double time_stamp);
+    void Run(const double time_stamp);
+    std::vector<double> SampleTimestamps(const double duration);
 
- private:
-    virtual std::vector<double> SampleTimestamps(double duration);
     bool value_;
 };
 
@@ -52,19 +50,20 @@ class Clock : public Generator
     explicit Clock(int element_id, double frequency);
 
  private:
-    void Run(int time_stamp) {}
+    void Run(const double timestamp);
+    std::vector<double> SampleTimestamps(const double duration);
 
- private:
-    virtual std::vector<double> SampleTimestamps(double duration);
     const double frequency_;
 };
 
-class SignalGenerator : public Generator
+class ManualGenerator : public Generator
 {
  public:
-    explicit SignalGenerator(int element_id);
+    explicit ManualGenerator(const int element_id, const std::vector<double>& rel_times);
 
  private:
-    virtual std::vector<double> SampleTimestamps(double duration);
-    void Run(int time_stamp) {}
+    std::vector<double> SampleTimestamps(const double duration);
+    void Run(const double timestamp);
+
+    const std::vector<double> rel_times_;
 };
