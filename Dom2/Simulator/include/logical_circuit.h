@@ -1,5 +1,5 @@
 // 
-// logica_circuit.h
+// logical_circuit.h
 //
 // Created by Stefan Stepanovic on 12/15/2019
 
