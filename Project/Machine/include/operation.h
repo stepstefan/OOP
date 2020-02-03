@@ -15,6 +15,7 @@
 #include "Event.h"
 #include "Sched.h"
 
+// Operand class (can be const, variable, or temporary token (product of operation))
 class Operand
 {
  public:
@@ -52,8 +53,6 @@ class Token : public Operand
 {
  public:
     explicit Token(const std::string& name);
-    // Token(const Token& ) = delete;
-    // Token& operator=(const Token&) = delete;
     bool Ready() const override;
     double Evaluate() const override;
     void SetValue(const double) override;
@@ -64,6 +63,7 @@ class Token : public Operand
     double value_;
 };
 
+// Operation class
 class Operation : public ITimedElement
 {
  public:

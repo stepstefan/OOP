@@ -16,10 +16,14 @@ class Machine
 {
  public:
     static Machine* Instance();
+    
+    // Read imf file
     void Read(const std::string& path);
 
+    // Finish operation and resolve it from pools
     void FinishOperation(Operation*);
 
+    // execute read imf file
     void Execute();
 
  private:

@@ -7,8 +7,10 @@
 #include <limits>
 #include <iostream>
 #include <fstream>
+#include <unordered_map>
 
 std::unordered_map<char, double> Memory::table_;
+int Memory::current_write_ = 0;
 
 Memory* Memory::Instance()
 {
@@ -69,7 +71,22 @@ void Memory::Print(const std::string& path) const
     {
         for (const auto& elem : table_)
         {
-            file << elem.first << " " << elem.second << std::endl;
+            file << elem.first << " = " << elem.second << std::endl;
         }
     }
+}
+
+void Memory::StartWriteProcess()
+{
+    current_write_++;
+}
+
+void Memory::EndWriteProcess()
+{
+    current_write_--;
+}
+
+bool Memory::AvailableWriteProcess(int max)
+{
+    return current_write_ < max;
 }

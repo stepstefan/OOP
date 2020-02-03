@@ -155,6 +155,7 @@ void Operation::Evaluate()
             break;
         case '=':
             left_operand_->SetValue(right_operand_->Evaluate());
+            Memory::Instance()->EndWriteProcess();
             break;
         default:
             break;

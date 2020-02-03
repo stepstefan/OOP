@@ -18,6 +18,13 @@ class Memory
     double Get(char name);
     void Set(char name, double value);
     void Print(const std::string& path) const;
+    
+    // denote start of writting process
+    void StartWriteProcess();
+    // denote end of writting process
+    void EndWriteProcess();
+    // check if there are available write slots
+    bool AvailableWriteProcess(int max);
 
  private:
     Memory() = default;
@@ -27,5 +34,6 @@ class Memory
     Memory& operator =(Memory& ) = delete;
 
     static std::unordered_map<char, double> table_;
+    static int current_write_;
 
 };

@@ -24,8 +24,10 @@ class Program
 
 
  private:
+    // Convert strings of expressions to expression trees
     void ConvertToTree();
 
+    // return priority of operations
     int priority(char operation);
 
     std::set<char> variables_;

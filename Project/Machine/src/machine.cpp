@@ -11,6 +11,8 @@
 #include <string>
 #include <cmath>
 
+#include "util.h"
+
 Machine::Machine()
 {}
 
@@ -20,21 +22,9 @@ Machine* Machine::Instance()
     return instance;
 }
 
-bool IsConst(const std::string& s)
-{
-    for (size_t i = 0; i < s.length(); i++)
-    {
-        if (!(s[i] == '.' || s[i] == '-' || (s[i] <= '9' && s[i] >= '0')))
-        {
-            return false;
-        }
-    }
-    return true;
-}
-
 Operand* Machine::CreateOperand(std::string& op_string)
 {
-    if (IsConst(op_string))
+    if (internal::IsConst(op_string))
     {
         return new Constant(std::stod(op_string));
     }
@@ -148,13 +138,12 @@ void Machine::Execute()
     {
         if (operation->Ready())
         {
-            if (operation->GetOperation() == '=' && cnt_w < Config::Instance()->GetWriteThreads())
+            if (operation->GetOperation() == '=' && Memory::Instance()->AvailableWriteProcess(Config::Instance()->GetWriteThreads()))
             {
                 Event::create(operation, operation->GetTime());
                 executing_.insert(operation);
                 waiting_.erase(operation);
-                // std::cout << operation->GetId() << std::endl;
-                cnt_w++;
+                Memory::Instance()->StartWriteProcess();
             }
             else if (operation->GetOperation() != '=')
             {

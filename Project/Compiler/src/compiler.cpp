@@ -38,44 +38,12 @@ std::string Compiler::EvaluateTree(Expression* expression, int& token_cnt, int& 
     }
 }
 
-bool IsOptimizableRight(Expression* expression)
-{
-    if (internal::IsConst(expression->Info()) || internal::IsVariable(expression->Info()))
-    {
-        return true;
-    }
-    else if (internal::IsOperator(expression->Info()) && expression->Info()[0] != '^')
-    {
-        char op = expression->Info()[0];
-        std::string left_op = expression->Left()->Info();
-        std::string right_op = expression->Right()->Info();
-
-        bool left_ok = internal::IsConst(left_op) || internal::IsVariable(left_op) || \
-                        (internal::IsOperator(left_op) && left_op[0] == op);
-        bool right_ok = internal::IsConst(right_op) || internal::IsVariable(right_op) || \
-                        (internal::IsOperator(right_op) && right_op[0] == op);
-        if (left_ok && right_ok)
-        {
-            return true;
-        }
-        else
-        {
-            return false;
-        }
-    }
-}
-
 bool EqualComutativeOperators(const std::string& op1, const std::string op2)
 {
     return internal::IsOperator(op1) && internal::IsOperator(op2) &&
            (op1[0] == op2[0]) && (op1[0] != '^') && (op1[0] != '/') && (op1[0] != '=');
 }
 
-bool Compiler::IsCalculable(std::string& expression)
-{
-    return internal::IsOperator(expression) || internal::IsConst(expression) ||
-           (internal::IsVariable(expression) && calculated_variables_.count(expression[0]));
-}
 
 void CreateStack(std::vector<Expression*>& stack, Expression* expression)
 {
@@ -205,13 +173,31 @@ void Compiler::OptimizeTree(Expression* expression)
     }
 }
 
+void Compiler::SimpleCompilation(Expression* expression, int& token_cnt, int& operation_cnt, std::fstream& file)
+{
+    // evaluate expression tree on right side of assignment
+    std::string value = EvaluateTree(expression->Right(), token_cnt, operation_cnt, file);
+
+    // write assignment operator
+    file << "[" << operation_cnt << "] " << expression->Info() << " " << expression->Left()->Info() << " " << value << std::endl;
+
+    operation_cnt++;
+}
+
+void Compiler::AdvancedCompilation(Expression* expression, int& token_cnt, int& operation_cnt, std::fstream& file)
+{
+    // optimize tree for this expression
+    OptimizeTree(expression->Right());
+
+    // perform same steps as in simple compilation
+    SimpleCompilation(expression, token_cnt, operation_cnt, file);
+}
+
 void Compiler::Compile()
 {
     int token_cnt = 1;
     int operation_cnt = 1;
     std::fstream file(output_file_, std::ios::out);
-
-    calculated_variables_.clear();
 
     for (Expression* expression : program_.GetExpressions())
     {
@@ -226,17 +212,12 @@ void Compiler::Compile()
         {
             if (compilation_type_ == CompilationType::ADVANCED_COMPILATION)
             {
-                OptimizeTree(expression->Right());
+                AdvancedCompilation(expression, token_cnt, operation_cnt, file);
             }
-            // evaluate expression tree on right side of assignment
-            std::string value = EvaluateTree(expression->Right(), token_cnt, operation_cnt, file);
-
-            // write assignment operator
-            file << "[" << operation_cnt << "] " << expression->Info() << " " << expression->Left()->Info() << " " << value << std::endl;
-
-            // Add variable to calculated list;
-            calculated_variables_.insert(expression->Left()->Info()[0]);
-            operation_cnt++;
+            else
+            {
+                SimpleCompilation(expression, token_cnt, operation_cnt, file);
+            }
         }
     }
 }
